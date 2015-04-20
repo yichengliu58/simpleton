@@ -9,7 +9,7 @@ using namespace std;
 
 int main()
 {
-    /*try {
+    try {
         simpleton::EndPoint end("127.0.0.1", 65530);
         int sock = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
         //cout << sock << endl;
@@ -23,5 +23,5 @@ int main()
     {
         //cout << e.what() << endl;
     }
-    return 0;*/
+    return 0;
 }

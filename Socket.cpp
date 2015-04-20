@@ -78,17 +78,7 @@ Socket Socket::Accept(EndPoint& peer)
     struct sockaddr_in addr;
     socklen_t len = static_cast<socklen_t >(sizeof(addr));
     bzero(&addr,len);
-    int connfd = ::accept(_sockfd,Socket::sockaddr_cast(&addr),&len);
-
-    //设置为非阻塞
-    int flags = ::fcntl(_sockfd,F_GETFL,0);
-    flags |= O_NONBLOCK;
-    flags |= O_CLOEXEC;
-    if(::fcntl(_sockfd,F_SETFL,flags) < 0)
-    {
-        int saveErr = errno;
-        throw exceptions::SetOptError("O_NONBLOCK|O_CLOEXEC",saveErr);
-    }
+    int connfd = ::accept4(_sockfd,Socket::sockaddr_cast(&addr),&len,SOCK_NONBLOCK|SOCK_CLOEXEC);
 
     //如果返回的连接套接字小于零就不必要close
     //直接抛出异常

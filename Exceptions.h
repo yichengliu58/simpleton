@@ -16,34 +16,8 @@ namespace simpleton
     namespace exceptions
     {
         //根据errno获取错误信息
-        std::string GetErrnoInfo(int num)
-        {
-            switch (num)
-            {
-                case 0: return "无错误";
-                case EPERM: return "需要操作权限";
-                case EIO: return "IO流错误";
-                case EBADF: return "文件描述符无效";
-                case ECHILD: return "子进程状态改变";
-                case EAGAIN: return "请求阻塞";
-                case EINVAL: return "参数无效";
-                case EPIPE: return "管道被关闭";
-                case ETIME: return "定时器到时";
-                case EPROTO: return "协议错误";
-                case ENOTSOCK: return "在非阻塞套接字进行操作";
-                case ENETUNREACH: return "网络不可达";
-                case ENETRESET: return "网络被重置";
-                case ECONNABORTED: return "软件引起的网络中断";
-                case ECONNRESET: return "连接被对端重置";
-                case ESHUTDOWN: return "由于调用shutdown无法写入";
-                case ETIMEDOUT: return "超时";
-                case ECONNREFUSED: return "连接被拒绝";
-                case EHOSTUNREACH: return "主机不可达";
-                case EALREADY: return "操作已经在进行中";
-                case EINPROGRESS: return "操作正在被处理";
-                default: return "未知错误";
-            }
-        }
+        std::string GetErrnoInfo(int num);
+
 
         //无效的IP地址
         class InvalidAddr : std::invalid_argument
@@ -85,8 +59,6 @@ namespace simpleton
         };
     }
 }
-
-
 
 
 
