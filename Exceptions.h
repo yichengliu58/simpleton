@@ -16,7 +16,7 @@ namespace simpleton
     namespace exceptions
     {
         //根据errno获取错误信息
-        std::string GetErrorInfo(int num)
+        std::string GetErrnoInfo(int num)
         {
             switch (num)
             {
@@ -51,7 +51,7 @@ namespace simpleton
         public:
             //接受errno值并初始化异常信息
             explicit InvalidAddr(int num)
-            :std::invalid_argument("无效IP地址！错误信息：" + exceptions::GetErrorInfo(num))
+            :std::invalid_argument("无效IP地址！错误信息：" + exceptions::GetErrnoInfo(num))
             {
             }
         };
@@ -62,7 +62,7 @@ namespace simpleton
         {
         public:
             explicit SetOptError(const std::string& name,int num)
-            :std::runtime_error(name + "属性设置失败！错误信息：" + exceptions::GetErrorInfo(num))
+            :std::runtime_error(name + "属性设置失败！错误信息：" + exceptions::GetErrnoInfo(num))
             { }
         };
 
@@ -71,7 +71,7 @@ namespace simpleton
         {
         public:
             explicit ApiExecError(const std::string& name,int num)
-            :std::runtime_error(std::string(name + "调用失败！错误信息：" + exceptions::GetErrorInfo(num)))
+            :std::runtime_error(std::string(name + "调用失败！错误信息：" + exceptions::GetErrnoInfo(num)))
             { }
         };
 
@@ -80,7 +80,7 @@ namespace simpleton
         {
         public:
             explicit ConnResetError(int sockfd,int num)
-            :std::runtime_error("Socket：" + std::to_string(sockfd) + "被对端重置！错误信息：" + exceptions::GetErrorInfo(num))
+            :std::runtime_error("Socket：" + std::to_string(sockfd) + "被对端重置！错误信息：" + exceptions::GetErrnoInfo(num))
             { }
         };
     }

@@ -1,12 +1,15 @@
 #include <iostream>
 #include "EndPoint.h"
 #include "Socket.h"
+#include "Exceptions.h"
 
 using namespace std;
+//using namespace simpleton;
+//using namespace simpleton::exceptions;
 
 int main()
 {
-    try {
+    /*try {
         simpleton::EndPoint end("127.0.0.1", 65530);
         int sock = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
         //cout << sock << endl;
@@ -18,7 +21,7 @@ int main()
     }
     catch(...)
     {
-
+        //cout << e.what() << endl;
     }
-    return 0;
+    return 0;*/
 }
