@@ -16,9 +16,9 @@ int main()
         simpleton::EndPoint peer(0);
         s.Accept(peer);
     }
-    catch(const std::exception& e)
+    catch(...)
     {
-        cout << e.what() << endl;
+
     }
     return 0;
 }

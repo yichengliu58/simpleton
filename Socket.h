@@ -8,7 +8,6 @@
 #define SIMPLETON_SOCKET_H
 
 #include <unistd.h>
-#include <stdexcept>
 #include "EndPoint.h"
 
 namespace simpleton
