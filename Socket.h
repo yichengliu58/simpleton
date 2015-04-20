@@ -9,6 +9,7 @@
 
 #include <unistd.h>
 #include <stdexcept>
+#include "EndPoint.h"
 
 namespace simpleton
 {
@@ -63,6 +64,12 @@ public:
     void ShutdownWrite();
     //关闭读端（shutdown RD）
     void ShutdownRead();
+
+    //接受连接
+    //成功时返回新的Socket对象并设置EndPoint对象
+    //因为客户端立即重置连接产生的错误忽略并返回-1的Socket对象
+    //其他非期待错误抛出异常（[UNP] p362）
+    Socket Accept(EndPoint& peer);
 
     //设置选项方，返回上次的选项值
 

@@ -26,7 +26,7 @@ namespace simpleton
         BlockingQueue(const BlockingQueue&) = delete;
         BlockingQueue &operator=(const BlockingQueue &) = delete;
 
-        ~Buffer() = default;
+        ~BlockingQueue() = default;
 
         //将对象入队
         void Push(const T &);
