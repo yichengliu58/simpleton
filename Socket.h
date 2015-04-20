@@ -8,6 +8,7 @@
 #define SIMPLETON_SOCKET_H
 
 #include <unistd.h>
+#include <stdexcept>
 
 namespace simpleton
 {
@@ -16,11 +17,16 @@ class EndPoint;
 class Socket
 {
 public:
-    Socket(int sockfd)
+    explicit  Socket(int sockfd)
             :_sockfd(sockfd)
-    { }
+    {
+        //描述符值无效直接抛出异常
+        if(sockfd < 0)
+            throw std::invalid_argument("创建SOCKET失败！描述符值无效！");
+    }
     ~Socket()
     {
+        //描述符值有效才关闭
         if(_sockfd >= 0)
             ::close(_sockfd);
     }
@@ -33,12 +39,12 @@ public:
     Socket(Socket&& other)
         :_sockfd(other._sockfd)
     {
-        other._sockfd = -2;
+        other._sockfd = -1;
     }
     Socket& operator=(Socket&& other)
     {
         _sockfd = other._sockfd;
-        other._sockfd = -2;
+        other._sockfd = -1;
         return *this;
     }
 
@@ -61,13 +67,17 @@ public:
     //设置选项方，返回上次的选项值
 
     //设置是否启用Nagle算法
-    bool SetNagle(bool on);
+    void SetNagle(bool on);
     //设置地址是否复用（so_reuseaddr）
-    bool SetReuseAddr(bool on);
+    void SetReuseAddr(bool on);
     //设置保活选项
-    bool SetKeepAlive(bool on);
+    void SetKeepAlive(bool on);
 
 private:
+    //转换地址结构体方法
+    static const struct sockaddr* sockaddr_cast(const struct sockaddr_in*);
+    static struct sockaddr* sockaddr_cast(struct sockaddr_in*);
+
     int _sockfd;
 };
 }

@@ -38,7 +38,7 @@ public:
     std::string ToString() const;
 
     //直接操作内部结构方法
-    const sockaddr_in& GetInternalAddr()
+    const sockaddr_in& GetInternalAddr() const
     {
         return _addr;
     }

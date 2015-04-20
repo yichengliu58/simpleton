@@ -27,7 +27,11 @@ EndPoint::EndPoint(const std::string &ip, uint16_t port)
 std::string EndPoint::GetIp() const
 {
     char buf[32];
-    return ::inet_ntop(AF_INET,&_addr.sin_addr,buf,INET_ADDRSTRLEN);
+    ::bzero(buf,32);
+    if(!::inet_ntop(AF_INET,&_addr.sin_addr,buf,INET_ADDRSTRLEN))
+        throw std::invalid_argument("IP地址无法解析！");
+    else
+        return std::string(buf);
 }
 
 uint16_t EndPoint::GetPort() const
