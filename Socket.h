@@ -9,6 +9,7 @@
 
 #include <unistd.h>
 #include "EndPoint.h"
+#include "Exceptions.h"
 
 namespace simpleton
 {
@@ -17,13 +18,19 @@ class EndPoint;
 class Socket
 {
 public:
+    //默认构造函数产生一个无效的Socket对象
+    explicit Socket()
+    :_sockfd(-1)
+    { }
+
     explicit  Socket(int sockfd)
             :_sockfd(sockfd)
     {
         //描述符值无效直接抛出异常
         if(sockfd < 0)
-            throw std::invalid_argument("创建SOCKET失败！描述符值无效！");
+            throw exceptions::NewSockError(errno);
     }
+
     ~Socket()
     {
         //描述符值有效才关闭
@@ -48,12 +55,25 @@ public:
         return *this;
     }
 
-    //基础API
+    //检测描述符值是否有效
+    bool IsValid()
+    {
+        return _sockfd >= 0;
+    }
 
+    //获取描述符值
     int GetFd() const
     {
         return _sockfd;
     }
+
+    //基础APIs
+
+    //为本套接字对象新建一个非阻塞描述符值
+    //如果对象本身持有有效描述符值则无操作
+    //如果新建失败则抛出异常NewSockError
+    //需要客户代码处理异常
+    void NewSocket();
 
     //绑定地址
     void BindEndPoint(const EndPoint& endpoint);
@@ -69,8 +89,6 @@ public:
     //因为客户端立即重置连接产生的错误忽略并返回-1的Socket对象
     //其他非期待错误抛出异常（[UNP] p362）
     Socket Accept(EndPoint& peer);
-
-    //设置选项方，返回上次的选项值
 
     //设置是否启用Nagle算法
     void SetNagle(bool on);

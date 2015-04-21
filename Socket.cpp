@@ -5,9 +5,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <linux/tcp.h>
-#include <fcntl.h>
 #include "Socket.h"
-#include "Exceptions.h"
 
 using namespace simpleton;
 
@@ -54,6 +52,20 @@ void Socket::SetReuseAddr(bool on)
     }
 }
 
+
+void Socket::NewSocket()
+{
+    //只针对无效套接字使用！
+    if(IsValid())
+       return;
+
+    int sockfd = ::socket(AF_INET,SOCK_STREAM|SOCK_NONBLOCK|SOCK_CLOEXEC,IPPROTO_TCP);
+    if(sockfd < 0)
+        throw exceptions::NewSockError(errno);
+    else
+        _sockfd = sockfd;
+}
+
 void Socket::BindEndPoint(const EndPoint& endpoint)
 {
     if(::bind(_sockfd,Socket::sockaddr_cast(&endpoint.GetInternalAddr()),
@@ -93,10 +105,14 @@ Socket Socket::Accept(EndPoint& peer)
             case ECONNABORTED:
             case EPROTO:
             //被信号中断时产生
-            // 信号默认处理方式一般是终止进程
+            //信号默认处理方式一般是终止进程
             case EINTR:
-                throw exceptions::ConnResetError(connfd,saveErr);
+            //描述符到上限
+            case EMFILE:
+                //返回一个无效Socket
+                return Socket();
             default:
+                //其他错误直接抛异常
                 throw exceptions::ApiExecError("accept",saveErr);
         }
     }

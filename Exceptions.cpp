@@ -34,6 +34,8 @@ std::string simpleton::exceptions::GetErrnoInfo(int num) {
             return "网络被重置";
         case ECONNABORTED:
             return "软件引起的网络中断";
+        case EMFILE:
+            return "描述符值达到上限";
         case ECONNRESET:
             return "连接被对端重置";
         case ESHUTDOWN:

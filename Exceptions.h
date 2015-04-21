@@ -57,6 +57,15 @@ namespace simpleton
             :std::runtime_error("Socket：" + std::to_string(sockfd) + "被对端重置！错误信息：" + exceptions::GetErrnoInfo(num))
             { }
         };
+
+        //Socket描述符创建失败
+        class NewSockError : std::runtime_error
+        {
+        public:
+            explicit NewSockError(int num)
+            :std::runtime_error("Socket描述符创建失败！错误信息：" + exceptions::GetErrnoInfo(num))
+            { }
+        };
     }
 }
 
