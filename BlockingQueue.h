@@ -25,6 +25,7 @@ namespace simpleton
         //不可复制
         BlockingQueue(const BlockingQueue&) = delete;
         BlockingQueue &operator=(const BlockingQueue &) = delete;
+        //默认移动构造不可用，因为mutex和cond不可移动
 
         ~BlockingQueue() = default;
 
