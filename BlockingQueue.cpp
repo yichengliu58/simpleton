@@ -9,34 +9,34 @@ using namespace simpleton;
 template<typename T>
 void BlockingQueue<T>::Push(const T& production)
 {
-    std::unique_lock<std::mutex> guard(lock);
-    while(queue.size() == size)
+    std::unique_lock<std::mutex> guard(_lock);
+    while(_queue.size() == _size)
     {
-        cond.wait(guard);
+        _cond.wait(guard);
     }
-    queue.push_back(production);
+    _queue.push_back(production);
     //std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    cond.notify_one();
+    _cond.notify_one();
 }
 
 template<typename T>
 std::shared_ptr<T> BlockingQueue<T>::Pop()
 {
-    std::unique_lock<std::mutex> guard(lock);
-    while(queue.empty())
+    std::unique_lock<std::mutex> guard(_lock);
+    while(_queue.empty())
     {
-        cond.wait(guard);
+        _cond.wait(guard);
     }
-    std::shared_ptr<T> ptr = std::make_shared<T>(queue.front());
-    queue.pop_front();
+    std::shared_ptr<T> ptr = std::make_shared<T>(_queue.front());
+    _queue.pop_front();
     //std::this_thread::sleep_for(std::chrono::seconds(1));
-    cond.notify_one();
+    _cond.notify_one();
     return ptr;
 }
 
 template<typename T>
 bool BlockingQueue<T>::Empty() const
 {
-    std::unique_lock<std::mutex> guard(lock);
-    return queue.empty();
+    std::unique_lock<std::mutex> guard(_lock);
+    return _queue.empty();
 }

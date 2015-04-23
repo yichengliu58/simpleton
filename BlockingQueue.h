@@ -20,7 +20,7 @@ namespace simpleton
     public:
         //构造时必须指明队列长度
         BlockingQueue(unsigned int size)
-                :size(size), queue(), lock(), cond() {
+                :_size(size), _queue(), _lock(), _cond() {
         }
         //不可复制
         BlockingQueue(const BlockingQueue&) = delete;
@@ -37,10 +37,10 @@ namespace simpleton
         bool Empty() const;
 
     private:
-        unsigned int size;
-        std::deque<T> queue;
-        mutable std::mutex lock;
-        std::condition_variable cond;
+        unsigned int _size;
+        std::deque<T> _queue;
+        mutable std::mutex _lock;
+        std::condition_variable _cond;
     };
 }
 
