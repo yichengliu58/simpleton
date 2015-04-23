@@ -8,11 +8,13 @@ using namespace simpleton;
 
 void fun()
 {
-    cout << "f" << endl;
+    cout << "aaa" << endl;
 }
 int main()
 {
     simpleton::ThreadPool pool(5);
-    pool.Start(8);
+    for(int i = 0;i < 12;i++)
+        pool.Submit(fun);
+    cout << "fuck" << endl;
     return 0;
 }

@@ -55,9 +55,10 @@ class ThreadPool
 public:
     using TaskType = function<void()>;
 
-    ThreadPool(unsigned int max)
-            :_joiner(_threads),_maxQueue(max),_maxNum(0),_isRunning(false)
-    { }
+    //开启线程池
+    //可以设置线程数目
+    //否则为默认值
+    ThreadPool(unsigned int, unsigned int maxNum = 0);
 
     //不可拷贝或移动
     ThreadPool(const ThreadPool&) = delete;
@@ -70,27 +71,23 @@ public:
         _isRunning = false;
     }
 
-    //开启线程池
-    //可以设置线程数目
-    //否则为默认值
-    void Start(unsigned int max = 0);
 
-
-    /*//提交一个函数对象在线程池中运行
+    //提交一个函数对象在线程池中运行
 
     //默认情况下会阻塞调用线程
     void Submit(const TaskType &);
-    void Submit(TaskType && );
+    /*void Submit(TaskType && );
 
     //重载函数：如果需要阻塞则返回-1
     bool TrySubmit(const TaskType &);
-    bool TrySubmit(TaskType && );*/
-
+    bool TrySubmit(TaskType && );
+*/
 private:
     //本进程池运行的工作线程函数
     void workerThread();
 
     //条件变量和互斥锁
+    //condition_variable _isFull;
     condition_variable _cond;
     mutex _mtx;
     //最大线程数目
