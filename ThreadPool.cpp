@@ -2,38 +2,35 @@
 // Created by lyc-fedora on 15-4-22.
 //
 
+#include <iostream>
 #include "ThreadPool.h"
 
 using namespace simpleton;
 
-ThreadPool::ThreadPool(unsigned int max = thread::hardware_concurrency())
-        :_maxNum(max),_isDone(true),_joiner(this->_threads)
+void ThreadPool::Start(unsigned int max)
 {
-    try
-    {
-        //产生_maxNum个线程
-        for (int i = 0; i < _maxNum; i++)
-            _threads.emplace_back(&ThreadPool::workerThread, this);
-    }
-    catch(...)
-    {
-        //如果产生任何异常则停止产生线程
-        //并且等待已产生的线程结束
-        _isDone = true;
-        throw;
-    }
+    unsigned int recommend = thread::hardware_concurrency();
+    _maxNum = max > recommend ? max : recommend;
+
+    _isRunning = true;
+    _threads.reserve(_maxNum);
+    for(int i = 0;i < _maxNum;i++)
+        _threads.emplace_back(&ThreadPool::workerThread,this);
 }
 
-void ThreadPool::Submit(const function<void()>& task)
+/*void ThreadPool::Submit(const TaskType& task)
 {
     unique_lock<mutex> guard(_mtx);
     while(_taskQueue.size() > _maxNum)
         _cond.wait(guard);
     _taskQueue.push_back(task);
     _cond.notify_all();
-}
+}*/
 
 void ThreadPool::workerThread()
 {
-
+    for (; ;) {
+        this_thread::sleep_for(chrono::seconds(1));
+        cout << this_thread::get_id() << endl;
+    }
 }
