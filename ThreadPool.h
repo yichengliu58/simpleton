@@ -53,12 +53,13 @@ private:
 class ThreadPool
 {
 public:
+    //定义线程函数类型
     using TaskType = function<void()>;
 
     //开启线程池
     //可以设置线程数目
     //否则为默认值
-    ThreadPool(unsigned int, unsigned int maxNum = 0);
+    ThreadPool(unsigned int maxQueue, unsigned int maxNum = 0);
 
     //不可拷贝或移动
     ThreadPool(const ThreadPool&) = delete;
@@ -66,10 +67,9 @@ public:
     ThreadPool(ThreadPool&&) = delete;
     ThreadPool& operator=(ThreadPool&&) = delete;
 
-    ~ThreadPool()
-    {
-        _isRunning = false;
-    }
+    //析构函数先设置_isRunning为false
+    //然后唤醒所有等待线程使其结束
+    ~ThreadPool();
 
 
     //提交一个函数对象在线程池中运行
