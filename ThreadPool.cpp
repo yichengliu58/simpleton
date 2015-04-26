@@ -40,7 +40,7 @@ ThreadPool::~ThreadPool()
 
 void ThreadPool::Submit(const TaskType& task) {
     unique_lock<mutex> guard(_mtx);
-    while (_taskQueue.size() >= _maxQueue)
+    while (_taskQueue.size() >= _maxQueue && _isRunning)
         _condFull.wait(guard);
     if (_isRunning && _taskQueue.size() < _maxQueue)
     {
@@ -57,8 +57,10 @@ void ThreadPool::workerThread()
         {
             unique_lock<mutex> guard(_mtx);
             //获取新任务
-            while(_taskQueue.empty())
+            while(_taskQueue.empty() && _isRunning)
+            {
                 _condEmpty.wait(guard);
+            }
             TaskType task;
             if(!_taskQueue.empty() && _isRunning)
             {
