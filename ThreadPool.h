@@ -87,8 +87,8 @@ private:
     void workerThread();
 
     //条件变量和互斥锁
-    //condition_variable _isFull;
-    condition_variable _cond;
+    condition_variable _condFull;
+    condition_variable _condEmpty;
     mutex _mtx;
     //最大线程数目
     //默认为hardware_currency()返回值

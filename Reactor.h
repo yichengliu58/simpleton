@@ -28,7 +28,7 @@ public:
     void Start();
 private:
     //用于检测当前线程是否存在多个Reactor对象
-    thread_local Reactor* _check;
+    Reactor* _check;
     //是否在执行事件循环
     atomic<bool> _isReacting;
     //代表当前线程id

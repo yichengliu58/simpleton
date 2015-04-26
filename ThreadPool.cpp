@@ -34,17 +34,18 @@ ThreadPool::~ThreadPool()
     //先设置为停止运行
     _isRunning = false;
     //通知所有等待在条件变量的线程
-    _cond.notify_all();
+    _condFull.notify_all();
+    _condEmpty.notify_all();
 }
 
 void ThreadPool::Submit(const TaskType& task) {
     unique_lock<mutex> guard(_mtx);
     while (_taskQueue.size() >= _maxQueue)
-        _cond.wait(guard);
+        _condFull.wait(guard);
     if (_isRunning && _taskQueue.size() < _maxQueue)
     {
         _taskQueue.push_back(task);
-        _cond.notify_one();
+        _condEmpty.notify_one();
     }
 }
 
@@ -57,16 +58,18 @@ void ThreadPool::workerThread()
             unique_lock<mutex> guard(_mtx);
             //获取新任务
             while(_taskQueue.empty())
-                _cond.wait(guard);
+                _condEmpty.wait(guard);
             TaskType task;
             if(!_taskQueue.empty() && _isRunning)
             {
                 task = std::move(_taskQueue.front());
                 _taskQueue.pop_front();
+                _condFull.notify_one();
             }
             guard.unlock();
             //运行新任务
-            task();
+            if(task)
+                task();
         }
     }
     catch(...)
