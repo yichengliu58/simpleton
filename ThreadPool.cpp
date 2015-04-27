@@ -38,7 +38,8 @@ ThreadPool::~ThreadPool()
     _condEmpty.notify_all();
 }
 
-void ThreadPool::Submit(const TaskType& task) {
+void ThreadPool::Submit(const TaskType& task)
+{
     unique_lock<mutex> guard(_mtx);
     while (_taskQueue.size() >= _maxQueue && _isRunning)
         _condFull.wait(guard);
