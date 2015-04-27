@@ -7,5 +7,6 @@ using namespace simpleton;
 
 int main()
 {
+
     return 0;
 }
