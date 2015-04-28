@@ -19,7 +19,7 @@ int main()
         server.BindEndPoint(end);
         server.Listen();
         vector<Dispatcher *> list;
-        plexer.WaitForAvailDispatchers(-1, list);
+        plexer.Wait(-1, list);
         for (auto &d : list)
             cout << d->GetEvents() << endl;
     }

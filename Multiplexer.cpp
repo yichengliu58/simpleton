@@ -8,7 +8,7 @@
 using namespace simpleton;
 
 Multiplexer::Multiplexer()
-:_epollfd(-1)
+:_epollfd(-1),_eventList(6)
 {
     if ((_epollfd = ::epoll_create(5)) == -1)
     {
@@ -28,18 +28,19 @@ void Multiplexer::AddDispathcer(Dispatcher& dispatcher)
     int sockfd = dispatcher.GetFd();
     _dispatcherMap[sockfd] = &dispatcher;
 
-    epoll_event event;
+    struct epoll_event event;
     event.data.fd = sockfd;
     event.events = dispatcher.GetEvents();
     ::epoll_ctl(_epollfd,EPOLL_CTL_ADD,sockfd,&event);
 }
 
 
-void Multiplexer::WaitForAvailDispatchers(int timeout,vector<Dispatcher*>& result)
+void Multiplexer::Wait(int timeout,vector<Dispatcher*>& result)
 {
     //_eventList.clear();
     //BUG！监听的事件数目最大值能否为eventList.size()？
-    int eventnum = ::epoll_wait(_epollfd,_eventList.data(), 10,timeout);
+    //应该每次动态改变！！！！
+    int eventnum = ::epoll_wait(_epollfd,_eventList.data(), 16,timeout);
 
     //处理得到的各种发生的事件
     if(eventnum > 0)
