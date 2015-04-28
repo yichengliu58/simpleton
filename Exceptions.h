@@ -20,7 +20,7 @@ namespace simpleton
 
 
         //无效的IP地址
-        class InvalidAddr : std::invalid_argument
+        class InvalidAddr : public std::invalid_argument
         {
         public:
             //接受errno值并初始化异常信息
@@ -32,7 +32,7 @@ namespace simpleton
 
         //设置套接字属性失败
         //包括fcntl和setsockopt
-        class SetOptError : std::runtime_error
+        class SetOptError : public std::runtime_error
         {
         public:
             explicit SetOptError(const std::string& name,int num)
@@ -41,7 +41,7 @@ namespace simpleton
         };
 
         //API调用失败
-        class ApiExecError : std::runtime_error
+        class ApiExecError : public std::runtime_error
         {
         public:
             explicit ApiExecError(const std::string& name,int num)
@@ -50,7 +50,7 @@ namespace simpleton
         };
 
         //对端过早关闭（重置）连接
-        class ConnResetError : std::runtime_error
+        class ConnResetError : public std::runtime_error
         {
         public:
             explicit ConnResetError(int sockfd,int num)
@@ -59,7 +59,7 @@ namespace simpleton
         };
 
         //Socket描述符创建失败
-        class NewSockError : std::runtime_error
+        class NewSockError : public std::runtime_error
         {
         public:
             explicit NewSockError(int num)

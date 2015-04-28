@@ -18,6 +18,8 @@ std::string simpleton::exceptions::GetErrnoInfo(int num) {
             return "子进程状态改变";
         case EAGAIN:
             return "请求阻塞";
+        case EFAULT:
+            return "内存地址访问失败";
         case EINVAL:
             return "参数无效";
         case EPIPE:

@@ -35,15 +35,15 @@ public:
     //添加要观察的描述符相应的分派器
     void AddDispathcer(Dispatcher&);
     //执行IO复用函数（epoll_wait）
-    //返回可用的分派器列表
-    void GetAvailDispatchers(int,vector<Dispatcher&>&);
+    //等待获得可用的分派器列表
+    void WaitForAvailDispatchers(int,vector<Dispatcher*>&);
 private:
     //表示内核事件表描述符（epoll_create）
     int _epollfd;
     //表示每次epoll_wait返回的可用事件列表
     vector<epoll_event> _eventList;
     //表示描述符和事件分发器的映射关系
-    map<int,Dispatcher&> _dispatcherMap;
+    map<int,Dispatcher*> _dispatcherMap;
 };
 }
 

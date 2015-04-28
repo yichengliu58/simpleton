@@ -7,13 +7,16 @@
 #define SIMPLETON_DISPATCHER_H
 
 
+#include <sys/epoll.h>
 
 class Dispatcher
 {
 public:
     //必须指定与之关联的描述符值
-    Dispatcher(int fd);
-    ~Dispatcher();
+    Dispatcher(int fd)
+    :_fd(fd),_events(EPOLLIN),_revents(0)
+    { }
+    ~Dispatcher() = default;
 
     //获取描述符值
     int GetFd() const
@@ -27,7 +30,11 @@ public:
         _revents = revents;
     }
 
-
+    //获取需要监听的事件
+    unsigned int GetEvents() const
+    {
+        return _events;
+    }
 private:
     //指定本分派器相关联的描述符
     int _fd;

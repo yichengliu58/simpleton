@@ -25,15 +25,21 @@ Multiplexer::~Multiplexer()
 
 void Multiplexer::AddDispathcer(Dispatcher& dispatcher)
 {
+    int sockfd = dispatcher.GetFd();
+    _dispatcherMap[sockfd] = &dispatcher;
 
+    epoll_event event;
+    event.data.fd = sockfd;
+    event.events = dispatcher.GetEvents();
+    ::epoll_ctl(_epollfd,EPOLL_CTL_ADD,sockfd,&event);
 }
 
 
-void Multiplexer::GetAvailDispatchers(int timeout,vector<Dispatcher&>& result)
+void Multiplexer::WaitForAvailDispatchers(int timeout,vector<Dispatcher*>& result)
 {
     //_eventList.clear();
     //BUG！监听的事件数目最大值能否为eventList.size()？
-    int eventnum = ::epoll_wait(_epollfd,_eventList.data(),_eventList.size(),timeout);
+    int eventnum = ::epoll_wait(_epollfd,_eventList.data(), 10,timeout);
 
     //处理得到的各种发生的事件
     if(eventnum > 0)
@@ -41,9 +47,10 @@ void Multiplexer::GetAvailDispatchers(int timeout,vector<Dispatcher&>& result)
         for(auto& event : _eventList)
         {
             int fd = event.data.fd;
-            auto iter = _dispatcherMap.find(fd);
-            if(iter != _dispatcherMap.end())
-                (iter->second).SetReturnEvents(event.events);
+            //是否需要判断是否存在？？？
+            Dispatcher* dispatcher = _dispatcherMap[fd];
+            dispatcher->SetReturnEvents(event.events);
+            result.push_back(dispatcher);
         }
     }
     else if(eventnum == 0)
