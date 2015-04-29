@@ -66,6 +66,15 @@ namespace simpleton
             :std::runtime_error("Socket描述符创建失败！错误信息：" + exceptions::GetErrnoInfo(num))
             { }
         };
+
+        //内部代码逻辑错误，例如必定会产生的事件在查询时并没有产生...
+        class InternalLogicError : public std::runtime_error
+        {
+        public:
+            explicit InternalLogicError(const std::string& funcName)
+            :std::runtime_error(funcName + "内部逻辑错误！")
+            { }
+        };
     }
 }
 

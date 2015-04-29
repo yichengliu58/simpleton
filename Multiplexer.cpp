@@ -8,7 +8,7 @@
 using namespace simpleton;
 
 Multiplexer::Multiplexer()
-:_epollfd(-1),_eventList(6)
+:_epollfd(-1),_eventList(16)
 {
     if ((_epollfd = ::epoll_create(5)) == -1)
     {
@@ -23,14 +23,14 @@ Multiplexer::~Multiplexer()
         ::close(_epollfd);
 }
 
-void Multiplexer::AddDispathcer(Dispatcher& dispatcher)
+void Multiplexer::AddDispathcer(Dispatcher* dispatcher)
 {
-    int sockfd = dispatcher.GetFd();
-    _dispatcherMap[sockfd] = &dispatcher;
+    int sockfd = dispatcher->GetFd();
+    _dispatcherMap[sockfd] = dispatcher;
 
     struct epoll_event event;
     event.data.fd = sockfd;
-    event.events = dispatcher.GetEvents();
+    event.events = dispatcher->GetEvents();
     ::epoll_ctl(_epollfd,EPOLL_CTL_ADD,sockfd,&event);
 }
 
@@ -40,18 +40,23 @@ void Multiplexer::Wait(int timeout,vector<Dispatcher*>& result)
     //_eventList.clear();
     //BUG！监听的事件数目最大值能否为eventList.size()？
     //应该每次动态改变！！！！
-    int eventnum = ::epoll_wait(_epollfd,_eventList.data(), 16,timeout);
+    int eventnum = ::epoll_wait(_epollfd,_eventList.data(), static_cast<int>(_eventList.size()),timeout);
 
     //处理得到的各种发生的事件
     if(eventnum > 0)
     {
-        for(auto& event : _eventList)
+        for(int i = 0;i < eventnum;i++)
         {
-            int fd = event.data.fd;
-            //是否需要判断是否存在？？？
-            Dispatcher* dispatcher = _dispatcherMap[fd];
-            dispatcher->SetReturnEvents(event.events);
-            result.push_back(dispatcher);
+            int fd = _eventList[i].data.fd;
+            auto iter = _dispatcherMap.find(fd);
+            //如果没找到，只有上帝知道为啥了
+            if (iter == _dispatcherMap.end())
+                throw exceptions::InternalLogicError("Multiplexer::Wait");
+            else
+            {
+                (iter->second)->SetReturnEvents(_eventList[i].events);
+                result.push_back(iter->second);
+            }
         }
     }
     else if(eventnum == 0)

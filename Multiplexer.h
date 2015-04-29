@@ -33,7 +33,7 @@ public:
     Multiplexer& operator=(Multiplexer&& );*/
 
     //添加要观察的描述符相应的分派器
-    void AddDispathcer(Dispatcher&);
+    void AddDispathcer(Dispatcher*);
     //执行IO复用函数（epoll_wait）
     //等待获得可用的分派器列表
     void Wait(int,vector<Dispatcher*>&);
