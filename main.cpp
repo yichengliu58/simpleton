@@ -20,17 +20,9 @@ int main()
         server.Listen();
         vector<Dispatcher *> list;
         //plexer.AddDispathcer(&dispatcher);
-        plexer.Wait(-1,list);
-
-        /*vector<epoll_event> v;
-        v.reserve(10);
-        int r = ::epoll_create(5);
-        epoll_event event;
-        event.data.fd = server.GetFd();
-        event.events = EPOLLIN;
-        epoll_ctl(r,EPOLL_CTL_ADD,server.GetFd(),&event);
-        int rr = ::epoll_wait(r,v.data(),12,-1);
-        cout << rr << endl;*/
+        plexer.Wait(-1, list);
+        for (auto &c : list)
+            c->HandleReturnEvents();
     }
     catch(const std::exception& e)
     {

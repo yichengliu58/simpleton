@@ -14,7 +14,8 @@ namespace simpleton {
     public:
         //必须指定与之关联的描述符值
         Dispatcher(int fd)
-                : _fd(fd), _events(EPOLLIN), _revents(0) { }
+                : _fd(fd), _events(EPOLLIN), _revents(0)
+        { }
 
         ~Dispatcher() = default;
 
