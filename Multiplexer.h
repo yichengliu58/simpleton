@@ -32,8 +32,15 @@ public:
     Multiplexer(Multiplexer&& );
     Multiplexer& operator=(Multiplexer&& );*/
 
-    //添加要观察的描述符相应的分派器
-    void AddDispathcer(Dispatcher*);
+    //添加或更新复用器内部的映射关系并
+    //更新内核事件表（epoll_ctl）
+    //ADD 和 MOD
+    void UpdateDispathcer(Dispatcher*);
+
+    //删除一个分派器并更新内核事件表
+    //DEL
+    void DeleteDispatcher(Dispatcher*);
+
     //执行IO复用函数（epoll_wait）
     //等待获得可用的分派器列表
     void Wait(int,vector<Dispatcher*>&);

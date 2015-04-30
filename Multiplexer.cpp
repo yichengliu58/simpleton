@@ -8,7 +8,7 @@
 using namespace simpleton;
 
 Multiplexer::Multiplexer()
-:_epollfd(-1),_eventList(16) //初始构造时产生16个空event结构体
+:_epollfd(-1),_eventList(8) //初始构造时产生8个空event结构体
 {
     if ((_epollfd = ::epoll_create(5)) == -1)
     {
@@ -23,15 +23,50 @@ Multiplexer::~Multiplexer()
         ::close(_epollfd);
 }
 
-void Multiplexer::AddDispathcer(Dispatcher* dispatcher)
+void Multiplexer::UpdateDispathcer(Dispatcher* dispatcher)
 {
     int sockfd = dispatcher->GetFd();
-    _dispatcherMap[sockfd] = dispatcher;
-
     struct epoll_event event;
     event.data.fd = sockfd;
     event.events = dispatcher->GetEvents();
-    ::epoll_ctl(_epollfd,EPOLL_CTL_ADD,sockfd,&event);
+    //利用map特性直接使用下标运算符
+    _dispatcherMap[sockfd] = dispatcher;
+    //判断是添加还是更新
+    if(_dispatcherMap.find(sockfd) == _dispatcherMap.end())
+    {
+        if(::epoll_ctl(_epollfd, EPOLL_CTL_ADD, sockfd, &event) < 0)
+        {
+            int saveError = errno;
+            throw exceptions::ApiExecError("epoll_ctl",saveError);
+        }
+    }
+    else
+    {
+        if(::epoll_ctl(_epollfd, EPOLL_CTL_MOD, sockfd, &event) < 0)
+        {
+            int saveError = errno;
+            throw exceptions::ApiExecError("epoll_ctl",saveError);
+        }
+    }
+}
+
+void Multiplexer::DeleteDispatcher(Dispatcher* dispatcher)
+{
+    int sockfd = dispatcher->GetFd();
+    struct epoll_event event;
+    event.data.fd = sockfd;
+    event.events = dispatcher->GetEvents();
+    //先查找，存在再进行下一步操作
+    auto iter = _dispatcherMap.find(sockfd);
+    if(iter != _dispatcherMap.end())
+    {
+        _dispatcherMap.erase(iter);
+        if(::epoll_ctl(_epollfd,EPOLL_CTL_DEL,sockfd,&event) < 0)
+        {
+            int saveError = errno;
+            throw exceptions::ApiExecError("epoll_ctl",saveError);
+        }
+    }
 }
 
 
@@ -57,7 +92,7 @@ void Multiplexer::Wait(int timeout,vector<Dispatcher*>& result)
             }
         }
         //动态改变内部eventList大小
-        if(static_cast<unsigned int>(eventnum) == _eventList.size())
+        if(static_cast<unsigned int>(eventnum) >= _eventList.size())
             _eventList.resize(_eventList.size() * 2);
     }
     else if(eventnum == 0)

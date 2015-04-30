@@ -8,13 +8,18 @@
 
 
 #include <sys/epoll.h>
+#include <functional>
 
-namespace simpleton {
-    class Dispatcher {
+using namespace std;
+
+namespace simpleton
+{
+    class Dispatcher
+    {
     public:
         //必须指定与之关联的描述符值
         Dispatcher(int fd)
-                : _fd(fd), _events(EPOLLIN), _revents(0)
+                : _fd(fd), _events(0), _revents(0)
         { }
 
         ~Dispatcher() = default;
@@ -25,6 +30,7 @@ namespace simpleton {
         }
 
         //设置IO复用返回的事件集合
+        //得到返回的事件后由Reactor负责调用HandleReturnEvents
         void SetReturnEvents(unsigned int revents) {
             _revents = revents;
         }
@@ -39,6 +45,25 @@ namespace simpleton {
         //回调函数逻辑用户自己提供
         void HandleReturnEvents();
 
+
+        //分别设置事件回调
+        //在设置回调的同时将相应事件添加值内部_events成员上
+        ////BUG！！这里的事件类型是否需要细致化？？？
+        void SetReadCallback(function<void()>& read)
+        {
+            _readCallback = read;
+            _events = EPOLLIN | EPOLLRDNORM | EPOLLPRI | EPOLLHUP;
+        }
+        void SetWriteCallback(function<void()>& write)
+        {
+            _writeCallback = write;
+            _events = EPOLLOUT | EPOLLWRNORM;
+        }
+        void SetExceptCallback(function<void()> except)
+        {
+            _exceptCallback = except;
+            _events = EPOLLERR;
+        }
     private:
         //指定本分派器相关联的描述符
         int _fd;
@@ -46,6 +71,11 @@ namespace simpleton {
         unsigned int _events;
         //表示IO复用后得到的发生的事件
         unsigned int _revents;
+
+        //三种对应的事件回调方法
+        function<void()> _readCallback;
+        function<void()> _writeCallback;
+        function<void()> _exceptCallback;
     };
 }
 
