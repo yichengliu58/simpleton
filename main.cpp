@@ -10,19 +10,8 @@ int main()
 {
     try
     {
-        Socket server;
-        EndPoint end(12399);
-        server.NewSocket();
-        Multiplexer plexer;
-        Dispatcher dispatcher(server.GetFd());
-        plexer.AddDispathcer(&dispatcher);
-        server.BindEndPoint(end);
-        server.Listen();
-        vector<Dispatcher *> list;
-        //plexer.AddDispathcer(&dispatcher);
-        plexer.Wait(-1, list);
-        for (auto &c : list)
-            c->HandleReturnEvents();
+        function<void()> fun;
+        fun();
     }
     catch(const std::exception& e)
     {

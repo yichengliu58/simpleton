@@ -16,11 +16,7 @@ void Dispatcher::HandleReturnEvents()
     //和普通数据加优先级数据可读
     if(_revents & (EPOLLIN | EPOLLRDNORM | EPOLLHUP | EPOLLPRI))
     {
-        cout << "handle" << endl;
-        Socket s(_fd);
-        EndPoint peer(0);
-        Socket ne = s.Accept(peer);
-        cout << ne.IsValid() << endl;
+
     }
     //数据可写情况
     //包括优先级数据和普通数据

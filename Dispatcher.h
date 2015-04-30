@@ -35,6 +35,8 @@ namespace simpleton {
         }
 
         //重点是这个处理各种返回事件的函数
+        //这里会回调用户提供的各种回调函数
+        //回调函数逻辑用户自己提供
         void HandleReturnEvents();
 
     private:
