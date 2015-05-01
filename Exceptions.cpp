@@ -8,6 +8,8 @@ std::string simpleton::exceptions::GetErrnoInfo(int num) {
     switch (num) {
         case 0:
             return "无错误";
+        case ENOENT:
+            return "指定的文件或目录不存在";
         case EPERM:
             return "需要操作权限";
         case EIO:

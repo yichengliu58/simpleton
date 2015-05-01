@@ -12,9 +12,9 @@ using namespace simpleton;
 void Dispatcher::HandleReturnEvents()
 {
     //数据可读情况
-    //包括对端关闭连接（read 0）
+    //包括对端关闭连接（EPOLLRDHUP）
     //和普通数据加优先级数据可读
-    if(_revents & (EPOLLIN | EPOLLRDNORM | EPOLLHUP | EPOLLPRI))
+    if(_revents & (EPOLLIN | EPOLLRDHUP | EPOLLRDNORM | EPOLLHUP | EPOLLPRI))
     {
         if(_readCallback)
             _readCallback();

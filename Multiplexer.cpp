@@ -29,8 +29,6 @@ void Multiplexer::UpdateDispathcer(Dispatcher* dispatcher)
     struct epoll_event event;
     event.data.fd = sockfd;
     event.events = dispatcher->GetEvents();
-    //利用map特性直接使用下标运算符
-    _dispatcherMap[sockfd] = dispatcher;
     //判断是添加还是更新
     if(_dispatcherMap.find(sockfd) == _dispatcherMap.end())
     {
@@ -48,6 +46,8 @@ void Multiplexer::UpdateDispathcer(Dispatcher* dispatcher)
             throw exceptions::ApiExecError("epoll_ctl",saveError);
         }
     }
+    //利用map特性直接使用下标运算符
+    _dispatcherMap[sockfd] = dispatcher;
 }
 
 void Multiplexer::DeleteDispatcher(Dispatcher* dispatcher)

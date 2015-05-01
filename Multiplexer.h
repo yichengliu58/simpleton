@@ -14,8 +14,6 @@
 
 using namespace std;
 
-class Reactor;
-
 namespace simpleton
 {
 class Multiplexer
@@ -32,6 +30,7 @@ public:
     Multiplexer(Multiplexer&& );
     Multiplexer& operator=(Multiplexer&& );*/
 
+    //BUG！！！这里的两个方法应该仅由Reactor调用！！是否设置友元？
     //添加或更新复用器内部的映射关系并
     //更新内核事件表（epoll_ctl）
     //ADD 和 MOD
