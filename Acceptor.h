@@ -27,7 +27,7 @@ public:
     Acceptor(Reactor* reactor,EndPoint end);
     ~Acceptor();
 
-    //分开设置为监听模式
+    //设置为监听模式并向Reactor中注册可读事件
     //因为需要先设置回调再开始监听
     void Listen();
 
@@ -38,6 +38,9 @@ public:
     }
 
 private:
+    //有一个自己定义的处理新连接到来时的回调用于接受连接
+    void handleRead();
+
     //用于reactor引用将自己的新连接事件添加进去
     Reactor* _reactor;
     //用于处理连接的监听套接字
@@ -46,6 +49,8 @@ private:
     Dispatcher _dispatcher;
     //新连接到来时的回调
     NewConnCallback _newConnCallback;
+    //是否处于监听模式
+    bool _isListening;
 };
 }
 

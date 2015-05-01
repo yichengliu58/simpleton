@@ -28,6 +28,11 @@ public:
     int GetFd() const {
         return _fd;
     }
+    //设置描述符值
+    void SetFd(int fd)
+    {
+        _fd = fd;
+    }
 
     //设置IO复用返回的事件集合
     //得到返回的事件后由Reactor负责调用HandleReturnEvents
