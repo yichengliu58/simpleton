@@ -54,7 +54,9 @@ std::string simpleton::exceptions::GetErrnoInfo(int num) {
             return "操作已经在进行中";
         case EINPROGRESS:
             return "操作正在被处理";
+        case EADDRINUSE:
+            return "地址正在被使用";
         default:
-            return "未知错误";
+            return std::to_string(num);
     }
 }

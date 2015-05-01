@@ -19,7 +19,7 @@ namespace simpleton
 {
 class Acceptor
 {
-using NewConnCallback = function<void(int,const EndPoint&)>;
+using NewConnCallback = function<void(Socket&&,const EndPoint&)>;
 
 public:
     //构造函数完成服务端的初始化工作
@@ -32,7 +32,7 @@ public:
     void Listen();
 
     //设置新连接到来时的回调
-    void SetNewConnCallback(NewConnCallback& callback)
+    void SetNewConnCallback(const NewConnCallback& callback)
     {
         _newConnCallback = callback;
     }

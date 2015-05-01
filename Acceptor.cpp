@@ -25,6 +25,17 @@ Acceptor::Acceptor(Reactor* reactor, EndPoint end)
     }
 }
 
+Acceptor::~Acceptor() {
+    try {
+        _dispatcher.DisableAllEvents();
+        _reactor->DeleteDispatcher(&_dispatcher);
+    }
+    catch(...)
+    {
+        //如果真的发生异常就吃掉！
+    }
+}
+
 void Acceptor::Listen()
 {
     try {
@@ -46,10 +57,13 @@ void Acceptor::Listen()
 void Acceptor::handleRead()
 {
     EndPoint peer(0);
+    //此时非阻塞accept
     Socket connSock = _socket.Accept(peer);
+    //必须判断是否有效
     if(connSock.IsValid())
     {
         if(_newConnCallback)
-            _newConnCallback()
+            _newConnCallback(std::move(connSock),peer);
     }
+    //如果连接无效Socket本身可以直接被析构无需处理
 }

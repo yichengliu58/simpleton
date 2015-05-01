@@ -3,34 +3,27 @@
 #include "Socket.h"
 #include "Multiplexer.h"
 #include "Reactor.h"
+#include "Acceptor.h"
 
 using namespace std;
 using namespace simpleton;
 
-void Callback()
+void callback(Socket&& s,const EndPoint& end)
 {
-
+    cout << end.ToString() << endl;
 }
 
 int main()
 {
     try
     {
-        EndPoint end("127.0.0.1",12955);
-        Socket s;
-        s.NewSocket();
-        s.SetReuseAddr(true);
-        s.BindEndPoint(end);
-        s.Listen();
-
-        Dispatcher disp(s.GetFd());
-        function<void()> func(Callback);
-        disp.SetReadCallback(func);
-
+        EndPoint end("127.0.0.1",19544);
         Reactor reactor;
-        reactor.UpdateDispatcher(&disp);
-        reactor.Start();
+        Acceptor acceptor(&reactor,end);
+        acceptor.SetNewConnCallback(callback);
+        acceptor.Listen();
 
+        reactor.Start();
     }
     catch(const std::exception& e)
     {
