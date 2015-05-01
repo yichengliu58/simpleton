@@ -8,9 +8,9 @@
 using namespace std;
 using namespace simpleton;
 
-void callback(Socket&& s,const EndPoint& end)
+void callback(Socket&& s,const EndPoint& peer)
 {
-    cout << end.ToString() << endl;
+    cout << peer.ToString() << endl;
 }
 
 int main()
