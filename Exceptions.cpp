@@ -18,6 +18,8 @@ std::string simpleton::exceptions::GetErrnoInfo(int num) {
             return "文件描述符无效";
         case ECHILD:
             return "子进程状态改变";
+        case EACCES:
+            return "请求被拒绝";
         case EAGAIN:
             return "请求阻塞";
         case EFAULT:

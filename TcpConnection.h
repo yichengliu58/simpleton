@@ -6,7 +6,8 @@
 #define SIMPLETON_TCPCONNECTION_H
 
 
-class TcpConnection {
+class TcpConnection
+{
 
 };
 
