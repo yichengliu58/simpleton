@@ -14,7 +14,7 @@ int main()
 {
     try
     {
-        EndPoint local(12306);
+        EndPoint local(12302);
         Reactor reactor;
         TcpServer server(&reactor,local);
 

@@ -8,12 +8,12 @@
 using namespace simpleton;
 
 TcpConnection::TcpConnection(const string& name,Reactor* reactor, Socket&& connSock, EndPoint const& local, EndPoint const& peer)
-:_name(name),_reactor(reactor),_socket(std::move(connSock)),_localAddr(local),_peerAddr(peer),_dispatcher(connSock.GetFd())
+:_name(name),_reactor(reactor),_socket(std::move(connSock)),_localAddr(local),_peerAddr(peer),_dispatcher(_socket.GetFd())
 {
     //首先设置本连接的分派器的各种回调
     _dispatcher.SetReadCallback(bind(&TcpConnection::handleRead,this));
     _dispatcher.SetCloseCallback(bind(&TcpConnection::handleClose,this));
-    _dispatcher.SetWriteCallback(bind(&TcpConnection::handleWrite,this));
+    //_dispatcher.SetWriteCallback(bind(&TcpConnection::handleWrite,this));
     _dispatcher.SetExceptCallback(bind(&TcpConnection::handleError,this));
     //向reactor中注册本分派器
     reactor->UpdateDispatcher(&_dispatcher);
@@ -24,18 +24,23 @@ TcpConnection::TcpConnection(const string& name,Reactor* reactor, Socket&& connS
 
 void TcpConnection::handleRead()
 {
-    cout << "read" << endl;
+    char buf[222];
+    ::recv(_socket.GetFd(),buf,sizeof(buf),0);
+    cout << buf << endl;
 }
 
 void TcpConnection::handleWrite()
 {
+    cout << "write" << endl;
 }
 
 void TcpConnection::handleClose()
 {
     cout << "close" << endl;
+    close(_socket.GetFd());
 }
 
 void TcpConnection::handleError()
 {
+    cout << "err" << endl;
 }

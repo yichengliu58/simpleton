@@ -51,9 +51,6 @@ public:
     void HandleReturnEvents();
 
     //分别设置事件回调
-    //在设置回调的同时将相应事件添加值内部_events成员上
-    ////BUG！！这里的事件类型是否需要细致化？？？
-    ////BUG！！这里是否需要分开设置回调和感兴趣的事件？？
     void SetCloseCallback(const function<void()>& close)
     {
         _closeCallback = close;
@@ -61,18 +58,37 @@ public:
     }
     void SetReadCallback(const function<void()>& read)
     {
+        SetReading();
         _readCallback = read;
-        _events |= EPOLLIN | EPOLLRDNORM | EPOLLPRI | EPOLLHUP;
     }
     void SetWriteCallback(const function<void()>& write)
     {
         _writeCallback = write;
-        _events |= EPOLLOUT | EPOLLWRNORM;
     }
     void SetExceptCallback(const function<void()> except)
     {
         _exceptCallback = except;
         _events |= EPOLLERR;
+    }
+
+    //因为可写事件可能会引发busy loop（只要内核写缓冲区可用数据量大于低水位标记即触发）
+    //需要分别设置可写事件和取消可写事件
+    void SetReading()
+    {
+        _events |= EPOLLIN | EPOLLRDNORM | EPOLLPRI | EPOLLHUP;
+    }
+    void UnsetReading()
+    {
+        _events &= ~(EPOLLIN | EPOLLRDNORM | EPOLLPRI | EPOLLHUP);
+    }
+
+    void SetWriting()
+    {
+        _events |= EPOLLOUT | EPOLLWRNORM;
+    }
+    void UnsetWriting()
+    {
+        _events &= ~(EPOLLOUT | EPOLLWRNORM);
     }
 
     //移除所有分派器上感兴趣的事件（_events清零）
