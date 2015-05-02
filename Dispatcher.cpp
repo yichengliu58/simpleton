@@ -9,15 +9,16 @@
 using namespace std;
 using namespace simpleton;
 
+//这里统一处理当前得到的所有事件
 void Dispatcher::HandleReturnEvents()
 {
+    //首先处理关闭触发关闭后不会在触发可读事件了
     //对端关闭连接（shutdown write或者close）
     if(_revents & EPOLLRDHUP)
     {
         if(_closeCallback)
             _closeCallback();
     }
-
 
     //数据可读情况
     //包括对端关闭连接（EPOLLRDHUP）

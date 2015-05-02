@@ -2,6 +2,8 @@
 // Created by lyc-fedora on 15-4-27.
 //
 //事件分派器
+//凡是使用到分派器的地方需要注意
+//感兴趣的事件的设置和回调的设置需要分开！
 
 #ifndef SIMPLETON_DISPATCHER_H
 #define SIMPLETON_DISPATCHER_H

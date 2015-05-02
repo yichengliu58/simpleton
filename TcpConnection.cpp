@@ -26,7 +26,8 @@ void TcpConnection::handleRead()
 {
     char buf[222];
     ::recv(_socket.GetFd(),buf,sizeof(buf),0);
-    cout << buf << endl;
+    string s("fukyou");
+    ::write(_socket.GetFd(),s.c_str(),s.length());
 }
 
 void TcpConnection::handleWrite()
@@ -37,7 +38,6 @@ void TcpConnection::handleWrite()
 void TcpConnection::handleClose()
 {
     cout << "close" << endl;
-    close(_socket.GetFd());
 }
 
 void TcpConnection::handleError()
