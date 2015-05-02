@@ -66,4 +66,6 @@ void Acceptor::handleRead()
             _newConnCallback(std::move(connSock),peer);
     }
     //如果连接无效Socket本身可以直接被析构无需处理
+    //并且不传递给回调函数
+    //因而不会创建TcpConnection
 }

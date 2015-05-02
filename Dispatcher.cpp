@@ -11,6 +11,14 @@ using namespace simpleton;
 
 void Dispatcher::HandleReturnEvents()
 {
+    //对端关闭连接（shutdown write或者close）
+    if(_revents & EPOLLRDHUP)
+    {
+        if(_closeCallback)
+            _closeCallback();
+    }
+
+
     //数据可读情况
     //包括对端关闭连接（EPOLLRDHUP）
     //和普通数据加优先级数据可读

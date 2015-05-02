@@ -45,7 +45,7 @@ private:
     Reactor* _reactor;
     //用于处理连接的监听套接字
     Socket _socket;
-    //自己的事件分派器用于向Reactor中注册
+    //自己的事件分派器用于负责监听套接字的事件分发
     Dispatcher _dispatcher;
     //新连接到来时的回调
     NewConnCallback _newConnCallback;

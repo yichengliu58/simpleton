@@ -54,20 +54,25 @@ public:
     //在设置回调的同时将相应事件添加值内部_events成员上
     ////BUG！！这里的事件类型是否需要细致化？？？
     ////BUG！！这里是否需要分开设置回调和感兴趣的事件？？
+    void SetCloseCallback(const function<void()>& close)
+    {
+        _closeCallback = close;
+        _events |= EPOLLRDHUP;
+    }
     void SetReadCallback(const function<void()>& read)
     {
         _readCallback = read;
-        _events = EPOLLIN | EPOLLRDNORM | EPOLLPRI | EPOLLHUP;
+        _events |= EPOLLIN | EPOLLRDNORM | EPOLLPRI | EPOLLHUP;
     }
     void SetWriteCallback(const function<void()>& write)
     {
         _writeCallback = write;
-        _events = EPOLLOUT | EPOLLWRNORM;
+        _events |= EPOLLOUT | EPOLLWRNORM;
     }
     void SetExceptCallback(const function<void()> except)
     {
         _exceptCallback = except;
-        _events = EPOLLERR;
+        _events |= EPOLLERR;
     }
 
     //移除所有分派器上感兴趣的事件（_events清零）
@@ -83,7 +88,8 @@ private:
     //表示IO复用后得到的发生的事件
     unsigned int _revents;
 
-    //三种对应的事件回调方法
+    //四种对应的事件回调方法
+    function<void()> _closeCallback;
     function<void()> _readCallback;
     function<void()> _writeCallback;
     function<void()> _exceptCallback;
