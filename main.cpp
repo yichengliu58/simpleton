@@ -10,6 +10,11 @@
 using namespace std;
 using namespace simpleton;
 
+void fun(const shared_ptr<TcpConnection>& ptr)
+{
+    cout << ptr->ToString() << endl;
+}
+
 int main()
 {
     try
@@ -17,7 +22,7 @@ int main()
         EndPoint local(12302);
         Reactor reactor;
         TcpServer server(&reactor,local);
-
+        server.SetNewConnCallback(fun);
         reactor.Start();
     }
     catch(const std::exception& e)

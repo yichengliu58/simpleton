@@ -22,6 +22,21 @@ TcpConnection::TcpConnection(const string& name,Reactor* reactor, Socket&& connS
     _socket.SetKeepAlive(true);
 }
 
+TcpConnection::~TcpConnection()
+{
+    _reactor = nullptr;
+    _currState = Disconnected;
+}
+
+void TcpConnection::ConnectionEstablished()
+{
+    //设置状态
+    _currState = Connected;
+    //回调
+    if(_onConnEstablished)
+        _onConnEstablished(shared_from_this());
+}
+
 void TcpConnection::handleRead()
 {
     char buf[222];

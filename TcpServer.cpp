@@ -35,11 +35,14 @@ TcpServer::~TcpServer()
 void TcpServer::handleNewConn(Socket&& sock, const EndPoint& peer)
 {
     //在这里新建TcpConnection对象并设置相关属性
-
     //给新连接赋予名字：ID + 地址 + Socket描述符
     string name = to_string(_connID) + _localAddr.ToString() + peer.ToString();
     //创建新连接
     TcpConnectionPtr newConn = make_shared<TcpConnection>(ref(name),_reactor,std::move(sock),ref(_localAddr),ref(peer));
     //将本连接置于映射表中
     _connections[name] = newConn;
+    //设置回调
+    newConn->SetConnEstablishedCallback(_newConnCallback);
+    //用于调用用户回调函数
+    newConn->ConnectionEstablished();
 }

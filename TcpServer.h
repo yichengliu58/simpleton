@@ -19,7 +19,6 @@ namespace simpleton
 class TcpServer
 {
 using TcpConnectionPtr = shared_ptr<TcpConnection>;
-using NewConnCallback = function<void(Socket&&,const EndPoint&)>;
 public:
     //构造函数完成一个服务器程序的初始化过程
     //内部使用Acceptor完成
@@ -29,7 +28,7 @@ public:
     //void Start();
 
     //分别用来设置新连接到来和新的可读消息到来
-    void SetNewConnCallback(const NewConnCallback& callback)
+    void SetNewConnCallback(const function<void(const TcpConnectionPtr&)>& callback)
     {
         _newConnCallback = callback;
     }
@@ -49,7 +48,7 @@ private:
     //表示本地地址结构
     EndPoint _localAddr;
     //用户提供对回调函数
-    NewConnCallback _newConnCallback;
+    function<void(const TcpConnectionPtr&)> _newConnCallback;
 };
 }
 
