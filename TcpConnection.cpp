@@ -41,8 +41,8 @@ void TcpConnection::handleRead()
 {
     char buf[222];
     ::recv(_socket.GetFd(),buf,sizeof(buf),0);
-    string s("fukyou");
-    ::write(_socket.GetFd(),s.c_str(),s.length());
+    if(_onNewMessage)
+        _onNewMessage(shared_from_this(),string(buf));
 }
 
 void TcpConnection::handleWrite()

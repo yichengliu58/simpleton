@@ -41,8 +41,9 @@ void TcpServer::handleNewConn(Socket&& sock, const EndPoint& peer)
     TcpConnectionPtr newConn = make_shared<TcpConnection>(ref(name),_reactor,std::move(sock),ref(_localAddr),ref(peer));
     //将本连接置于映射表中
     _connections[name] = newConn;
-    //设置回调
+    //设置新建连接的回调
     newConn->SetConnEstablishedCallback(_newConnCallback);
-    //用于调用用户回调函数
+    newConn->SetNewMsgCallback(_newMessageCallback);
+    //用于调用新建连接后的用户回调
     newConn->ConnectionEstablished();
 }

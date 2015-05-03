@@ -12,17 +12,23 @@ using namespace simpleton;
 
 void fun(const shared_ptr<TcpConnection>& ptr)
 {
-    cout << ptr->ToString() << endl;
+    cout << ptr->GetPeerAddr().ToString() << " has connected" << endl;
+}
+
+void fuck(const shared_ptr<TcpConnection>& conn,const string& msg)
+{
+    cout << conn->GetPeerAddr().ToString() << " says: " << msg << endl;
 }
 
 int main()
 {
     try
     {
-        EndPoint local(12302);
+        EndPoint local(12306);
         Reactor reactor;
         TcpServer server(&reactor,local);
         server.SetNewConnCallback(fun);
+        server.SetNewMsgCallback(fuck);
         reactor.Start();
     }
     catch(const std::exception& e)

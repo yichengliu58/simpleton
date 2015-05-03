@@ -25,14 +25,16 @@ public:
     TcpServer(Reactor* reactor,const EndPoint& local);
     ~TcpServer();
 
-    //void Start();
-
-    //分别用来设置新连接到来和新的可读消息到来
-    void SetNewConnCallback(const function<void(const TcpConnectionPtr&)>& callback)
+    //设置新连接建立后的回调
+    void SetNewConnCallback(const function<void(const TcpConnectionPtr&)>& cb)
     {
-        _newConnCallback = callback;
+        _newConnCallback = cb;
     }
-    //void SetNewMsgCallback();
+    //设置新可读消息到来后的回调
+    void SetNewMsgCallback(const function<void(const TcpConnectionPtr&,const string&)>& cb)
+    {
+        _newMessageCallback = cb;
+    }
 private:
     //用于提供给Acceptor的新建连接的回调函数
     void handleNewConn(Socket&&,const EndPoint&);
@@ -47,8 +49,10 @@ private:
     unsigned int _connID;
     //表示本地地址结构
     EndPoint _localAddr;
-    //用户提供对回调函数
+    //用户提供的新连接建立后的回调函数
     function<void(const TcpConnectionPtr&)> _newConnCallback;
+    //用户提供的新消息到达后的回调函数
+    function<void(const TcpConnectionPtr&,const string&)> _newMessageCallback;
 };
 }
 
