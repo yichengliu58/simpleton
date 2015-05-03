@@ -15,8 +15,10 @@ TcpConnection::TcpConnection(const string& name,Reactor* reactor, Socket&& connS
     _dispatcher.SetCloseCallback(bind(&TcpConnection::handleClose,this));
     //_dispatcher.SetWriteCallback(bind(&TcpConnection::handleWrite,this));
     _dispatcher.SetExceptCallback(bind(&TcpConnection::handleError,this));
+
     //向reactor中注册本分派器
     reactor->UpdateDispatcher(&_dispatcher);
+
     //不需要设置地址重用
     //设置本连接socekt的保活选项
     _socket.SetKeepAlive(true);
@@ -50,6 +52,7 @@ void TcpConnection::handleRead()
     }
     else if(res == 0)
     {
+        //在处理关闭逻辑之前需要将发送缓冲区的东西发送完
         handleClose();
     }
     else
@@ -65,16 +68,17 @@ void TcpConnection::handleWrite()
 
 void TcpConnection::handleClose()
 {
+    shared_ptr<TcpConnection> tmp = shared_from_this();
     _currState = Disconnecting;
     //首先清除分派器上所有事件
     _dispatcher.UnsetAllEvents();
     //从Reactor上移除本连接的分派器
     _reactor->DeleteDispatcher(&_dispatcher);
     //调用被动关闭连接时的回调（由TcpServer提供）
-    _onPassiveClosing(shared_from_this());
+    _onPassiveClosing(tmp);
 }
 
 void TcpConnection::handleError()
 {
-    cout << "err" << endl;
+    int err = _socket.GetSocketError();
 }

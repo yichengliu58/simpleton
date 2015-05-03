@@ -84,6 +84,9 @@ public:
     //关闭读端（shutdown RD）
     void ShutdownRead();
 
+    //获取套接字当前错误（getsockopt）
+    int GetSocketError();
+
     //接受连接
     //成功时返回新的Socket对象并设置EndPoint对象
     //因为客户端立即重置连接产生的错误忽略并返回-1的Socket对象

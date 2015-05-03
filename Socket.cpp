@@ -138,3 +138,11 @@ void Socket::ShutdownRead()
     if(::shutdown(_sockfd,SHUT_RD) < 0)
         throw std::runtime_error(std::to_string(_sockfd) + "：关闭套接字读端失败！");
 }
+
+int Socket::GetSocketError()
+{
+    int err = 0;
+    socklen_t len = sizeof(err);
+    ::getsockopt(_sockfd,SOL_SOCKET,SO_ERROR,&err,&len);
+    return err;
+}

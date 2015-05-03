@@ -3,7 +3,6 @@
 //
 
 #include "TcpServer.h"
-#include <iostream>
 
 using namespace std;
 using namespace std::placeholders;
@@ -33,16 +32,12 @@ TcpServer::~TcpServer()
     _reactor = nullptr;
 }
 
-void TcpServer::handleConnClosing(TcpConnectionPtr conn)
+void TcpServer::handleConnClosing(const TcpConnectionPtr& conn)
 {
-    cout << conn.use_count() << endl;
     //先删除连接对象
     _connections.erase(conn->ToString());
     //调用用户回调
-    cout << conn.use_count() << endl;
-
     _passiveClosingCallback(conn);
-    cout << conn.use_count() << endl;
 }
 
 void TcpServer::handleNewConn(Socket&& sock, const EndPoint& peer)
