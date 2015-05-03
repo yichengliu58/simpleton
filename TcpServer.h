@@ -25,6 +25,11 @@ public:
     TcpServer(Reactor* reactor,const EndPoint& local);
     ~TcpServer();
 
+    unsigned long get()
+    {
+        return _connections.size();
+    }
+
     //设置新连接建立后的回调
     void SetNewConnCallback(const function<void(const TcpConnectionPtr&)>& cb)
     {
@@ -35,24 +40,35 @@ public:
     {
         _newMessageCallback = cb;
     }
+    //设置被动关闭时调用的回调函数
+    void SetPassiveClosingCallback(const function<void(const TcpConnectionPtr&)>& cb)
+    {
+        _passiveClosingCallback = cb;
+    }
 private:
     //用于提供给Acceptor的新建连接的回调函数
     void handleNewConn(Socket&&,const EndPoint&);
+    //在TcpConnection处理关闭事件时调用
+    //负责将参数指定的连接对象从本Server对象中的映射表删除
+    void handleConnClosing(TcpConnectionPtr);
 
     //用于保存关联到的反应器对象
     Reactor* _reactor;
     //本Server内部的接受器
     unique_ptr<Acceptor> _acceptor;
-    //使用map保存TcpConnection对象便于删除连接
+    //当前本Server中保存的所有连接
     map<string,TcpConnectionPtr> _connections;
     //表示连接的可用ID
     unsigned int _connID;
     //表示本地地址结构
     EndPoint _localAddr;
+
     //用户提供的新连接建立后的回调函数
     function<void(const TcpConnectionPtr&)> _newConnCallback;
     //用户提供的新消息到达后的回调函数
     function<void(const TcpConnectionPtr&,const string&)> _newMessageCallback;
+    //用户提供的被动关闭连接后的回调函数
+    function<void(const TcpConnectionPtr&)> _passiveClosingCallback;
 };
 }
 

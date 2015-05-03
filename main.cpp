@@ -20,6 +20,11 @@ void fuck(const shared_ptr<TcpConnection>& conn,const string& msg)
     cout << conn->GetPeerAddr().ToString() << " says: " << msg << endl;
 }
 
+void clo(const shared_ptr<TcpConnection>& conn)
+{
+    cout << conn->ToString() << " is closing " << endl;
+}
+
 int main()
 {
     try
@@ -29,6 +34,8 @@ int main()
         TcpServer server(&reactor,local);
         server.SetNewConnCallback(fun);
         server.SetNewMsgCallback(fuck);
+        server.SetPassiveClosingCallback(clo);
+
         reactor.Start();
     }
     catch(const std::exception& e)

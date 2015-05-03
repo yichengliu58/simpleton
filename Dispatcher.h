@@ -60,6 +60,7 @@ public:
     }
     void SetReadCallback(const function<void()>& read)
     {
+        //注意这里直接设置可读事件
         SetReading();
         _readCallback = read;
     }
@@ -94,7 +95,7 @@ public:
     }
 
     //移除所有分派器上感兴趣的事件（_events清零）
-    void DisableAllEvents()
+    void UnsetAllEvents()
     {
         _events = 0;
     }

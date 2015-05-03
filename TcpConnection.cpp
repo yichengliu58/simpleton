@@ -39,10 +39,23 @@ void TcpConnection::ConnectionEstablished()
 
 void TcpConnection::handleRead()
 {
-    char buf[222];
-    ::recv(_socket.GetFd(),buf,sizeof(buf),0);
-    if(_onNewMessage)
-        _onNewMessage(shared_from_this(),string(buf));
+    //暂时使用peek查看read的返回值
+    char buf[65535];
+    int res = ::recv(_socket.GetFd(),buf,sizeof(buf),MSG_PEEK);
+    //根据不同的返回值调用不同的处理方法
+    if(res > 0)
+    {
+        ::read(_socket.GetFd(),buf,sizeof(buf));
+        _onNewMessage(shared_from_this(),buf);
+    }
+    else if(res == 0)
+    {
+        handleClose();
+    }
+    else
+    {
+        handleError();
+    }
 }
 
 void TcpConnection::handleWrite()
@@ -52,7 +65,13 @@ void TcpConnection::handleWrite()
 
 void TcpConnection::handleClose()
 {
-    cout << "close" << endl;
+    _currState = Disconnecting;
+    //首先清除分派器上所有事件
+    _dispatcher.UnsetAllEvents();
+    //从Reactor上移除本连接的分派器
+    _reactor->DeleteDispatcher(&_dispatcher);
+    //调用被动关闭连接时的回调（由TcpServer提供）
+    _onPassiveClosing(shared_from_this());
 }
 
 void TcpConnection::handleError()

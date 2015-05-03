@@ -27,7 +27,7 @@ Acceptor::Acceptor(Reactor* reactor, EndPoint end)
 
 Acceptor::~Acceptor() {
     try {
-        _dispatcher.DisableAllEvents();
+        _dispatcher.UnsetAllEvents();
         _reactor->DeleteDispatcher(&_dispatcher);
     }
     catch(...)

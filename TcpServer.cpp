@@ -3,6 +3,7 @@
 //
 
 #include "TcpServer.h"
+#include <iostream>
 
 using namespace std;
 using namespace std::placeholders;
@@ -32,6 +33,18 @@ TcpServer::~TcpServer()
     _reactor = nullptr;
 }
 
+void TcpServer::handleConnClosing(TcpConnectionPtr conn)
+{
+    cout << conn.use_count() << endl;
+    //先删除连接对象
+    _connections.erase(conn->ToString());
+    //调用用户回调
+    cout << conn.use_count() << endl;
+
+    _passiveClosingCallback(conn);
+    cout << conn.use_count() << endl;
+}
+
 void TcpServer::handleNewConn(Socket&& sock, const EndPoint& peer)
 {
     //在这里新建TcpConnection对象并设置相关属性
@@ -44,6 +57,8 @@ void TcpServer::handleNewConn(Socket&& sock, const EndPoint& peer)
     //设置新建连接的回调
     newConn->SetConnEstablishedCallback(_newConnCallback);
     newConn->SetNewMsgCallback(_newMessageCallback);
-    //用于调用新建连接后的用户回调
+    //设置连接被动关闭时调用的本Server的方法来移除该连接
+    newConn->SetPassiveClosingCallback(bind(&TcpServer::handleConnClosing,this,_1));
+    //调用新建连接后的用户回调
     newConn->ConnectionEstablished();
 }

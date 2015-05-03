@@ -7,8 +7,11 @@
 #define SIMPLETON_BUFFER_H
 
 
-class Buffer {
+class Buffer
+{
+public:
 
+private:
 };
 
 

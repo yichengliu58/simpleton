@@ -63,10 +63,13 @@ public:
         _onNewMessage = cb;
     }
 
+    //连接被动关闭需要调用TcpServer的方法从其中移除本连接对象指针
+    void SetPassiveClosingCallback(const function<void(const shared_ptr<TcpConnection>&)>& cb)
+    {
+        _onPassiveClosing = cb;
+    }
     //连接完成初始化后由TcpServer调用负责调用用户回调
     void ConnectionEstablished();
-    //连接即将关闭由TcpServer调用负责调用用户回调
-    void ConnectionClosed();
 private:
     //这些回调供dispatcher调用
     //最初的获得的事件会先调用这里的回调
@@ -90,13 +93,16 @@ private:
     //自己的事件分发器用于本连接的连接套接字的事件分发
     Dispatcher _dispatcher;
 
+    //这里的回调由TcpServer提供
+    //连接正在被动关闭调用Server的方法将本连接从其中移除
+    function<void(const shared_ptr<TcpConnection>&)> _onPassiveClosing;
+
     //这里的回调是用户提供的
     //新连接创建（接受）完成
     function<void(const shared_ptr<TcpConnection>&)> _onConnEstablished;
     //新可读消息到来
     function<void(const shared_ptr<TcpConnection>&,const string&)> _onNewMessage;
-    //连接正在被动关闭
-    function<void(const shared_ptr<TcpConnection>&)> _onPassiveClosing;
+
 
 };
 }
