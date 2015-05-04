@@ -39,16 +39,27 @@ void TcpConnection::ConnectionEstablished()
         _onConnEstablished(shared_from_this());
 }
 
+void TcpConnection::Send(string const& s)
+{
+    ////BUG！！！这里线程安全性没有处理！
+
+    //如果缓冲区没有数据且并没有关注可写事件
+    if(!_dispatcher.IsWritingSet() && _outBuffer.WriteableSize() <= 0)
+    {
+        _outBuffer.Push(s);
+    }
+}
+
+
+
 void TcpConnection::handleRead()
 {
-    //暂时使用peek查看read的返回值
-    char buf[65535];
-    int res = ::recv(_socket.GetFd(),buf,sizeof(buf),MSG_PEEK);
+    //首先将内核缓冲区的数据读入到本缓冲区
+    size_t res = _inBuffer.ReadFromKernel(_socket);
     //根据不同的返回值调用不同的处理方法
     if(res > 0)
     {
-        ::read(_socket.GetFd(),buf,sizeof(buf));
-        _onNewMessage(shared_from_this(),buf);
+        _onNewMessage(shared_from_this(),_inBuffer);
     }
     else if(res == 0)
     {
@@ -61,21 +72,33 @@ void TcpConnection::handleRead()
     }
 }
 
+
 void TcpConnection::handleWrite()
 {
-    cout << "write" << endl;
+    //如果写事件正在被关注且缓冲区有数据待写入
+    if(_dispatcher.IsWritingSet() && _outBuffer.WriteableSize() > 0) {
+        //则将缓冲区数据继续写入
+        bool res = _outBuffer.WriteIntoKernel(_socket);
+        //如果这次写完数据了则不再关注写事件
+        if (!res) {
+            //先更新写事件
+            _dispatcher.UnsetWriting();
+            _reactor->UpdateDispatcher(&_dispatcher);
+            //如果此时连接正在被主动关闭
+            //if(_currState == Disconnecting)
+        }
+    }
 }
 
 void TcpConnection::handleClose()
 {
-    shared_ptr<TcpConnection> tmp = shared_from_this();
     _currState = Disconnecting;
     //首先清除分派器上所有事件
     _dispatcher.UnsetAllEvents();
     //从Reactor上移除本连接的分派器
     _reactor->DeleteDispatcher(&_dispatcher);
     //调用被动关闭连接时的回调（由TcpServer提供）
-    _onPassiveClosing(tmp);
+    _onPassiveClosing(shared_from_this());
 }
 
 void TcpConnection::handleError()

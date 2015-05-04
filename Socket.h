@@ -63,6 +63,10 @@ public:
     {
         return _sockfd >= 0;
     }
+    operator bool()
+    {
+        return IsValid();
+    }
 
     //获取描述符值
     int GetFd() const

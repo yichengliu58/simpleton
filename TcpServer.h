@@ -36,7 +36,7 @@ public:
         _newConnCallback = cb;
     }
     //设置新可读消息到来后的回调
-    void SetNewMsgCallback(const function<void(const TcpConnectionPtr&,const string&)>& cb)
+    void SetNewMsgCallback(const function<void(const TcpConnectionPtr&,Buffer&)>& cb)
     {
         _newMessageCallback = cb;
     }
@@ -66,7 +66,7 @@ private:
     //用户提供的新连接建立后的回调函数
     function<void(const TcpConnectionPtr&)> _newConnCallback;
     //用户提供的新消息到达后的回调函数
-    function<void(const TcpConnectionPtr&,const string&)> _newMessageCallback;
+    function<void(const TcpConnectionPtr&,Buffer& )> _newMessageCallback;
     //用户提供的被动关闭连接后的回调函数
     function<void(const TcpConnectionPtr&)> _passiveClosingCallback;
 };

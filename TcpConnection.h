@@ -13,6 +13,7 @@
 
 #include "Socket.h"
 #include "Reactor.h"
+#include "Buffer.h"
 
 using namespace std;
 
@@ -58,7 +59,7 @@ public:
         _onConnEstablished = cb;
     }
     //新可读消息到来
-    void SetNewMsgCallback(const function<void(const shared_ptr<TcpConnection>&,const string&)>& cb)
+    void SetNewMsgCallback(const function<void(const shared_ptr<TcpConnection>&,Buffer&)>& cb)
     {
         _onNewMessage = cb;
     }
@@ -70,6 +71,9 @@ public:
     }
     //连接完成初始化后由TcpServer调用负责调用用户回调
     void ConnectionEstablished();
+
+    //用于在此连接上无阻塞发送数据
+    void Send(const string&);
 private:
     //这些回调供dispatcher调用
     //最初的获得的事件会先调用这里的回调
@@ -92,6 +96,10 @@ private:
     EndPoint _peerAddr;
     //自己的事件分发器用于本连接的连接套接字的事件分发
     Dispatcher _dispatcher;
+    //表示本连接的输出缓冲区（负责向内核写入数据）
+    Buffer _outBuffer;
+    //表示输入缓冲区（负责从内核读取数据）
+    Buffer _inBuffer;
 
     //这里的回调由TcpServer提供
     //连接正在被动关闭调用Server的方法将本连接从其中移除
@@ -101,7 +109,7 @@ private:
     //新连接创建（接受）完成
     function<void(const shared_ptr<TcpConnection>&)> _onConnEstablished;
     //新可读消息到来
-    function<void(const shared_ptr<TcpConnection>&,const string&)> _onNewMessage;
+    function<void(const shared_ptr<TcpConnection>&,Buffer&)> _onNewMessage;
 
 
 };

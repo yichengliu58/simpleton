@@ -21,7 +21,7 @@ class Dispatcher
 public:
     //必须指定与之关联的描述符值
     Dispatcher(int fd)
-            : _fd(fd), _events(0), _revents(0)
+            : _fd(fd), _events(0), _revents(0),_isReading(false),_isWriting(false)
     { }
 
     ~Dispatcher() = default;
@@ -81,25 +81,40 @@ public:
     //需要分别设置可写事件和取消可写事件
     void SetReading()
     {
+        _isReading = true;
         _events |= EPOLLIN | EPOLLRDNORM | EPOLLPRI | EPOLLHUP;
     }
     void UnsetReading()
     {
+        _isReading = false;
         _events &= ~(EPOLLIN | EPOLLRDNORM | EPOLLPRI | EPOLLHUP);
+    }
+    bool IsReadingSet()
+    {
+        return _isReading;
     }
 
     void SetWriting()
     {
+        _isWriting = true;
         _events |= EPOLLOUT | EPOLLWRNORM;
     }
     void UnsetWriting()
     {
+        _isWriting = false;
         _events &= ~(EPOLLOUT | EPOLLWRNORM);
+    }
+
+    bool IsWritingSet()
+    {
+        return _isWriting;
     }
 
     //移除所有分派器上感兴趣的事件（_events清零）
     void UnsetAllEvents()
     {
+        _isReading = false;
+        _isWriting = false;
         _events = 0;
     }
 private:
@@ -109,6 +124,10 @@ private:
     unsigned int _events;
     //表示IO复用后得到的发生的事件
     unsigned int _revents;
+
+    //分别表示是否关注了读写事件
+    bool _isReading;
+    bool _isWriting;
 
     //四种对应的事件回调方法
     function<void()> _closeCallback;
