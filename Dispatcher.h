@@ -26,6 +26,9 @@ public:
 
     ~Dispatcher() = default;
 
+    Dispatcher(const Dispatcher&) = delete;
+    Dispatcher& operator=(const Dispatcher&) = delete;
+
     //获取描述符值
     int GetFd() const {
         return _fd;

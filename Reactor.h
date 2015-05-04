@@ -26,6 +26,9 @@ public:
     Reactor();
     ~Reactor();
 
+    Reactor(const Reactor&) = delete;
+    Reactor& operator=(const Reactor&) = delete;
+
     //向反应器中注册（更新或添加）事件分派器
     void UpdateDispatcher(Dispatcher*);
     //删除分派器

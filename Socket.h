@@ -50,6 +50,9 @@ public:
     }
     Socket& operator=(Socket&& other)
     {
+        //处理自引用
+        if(this == &other)
+            return *this;
         _sockfd = other._sockfd;
         other._sockfd = -1;
         return *this;

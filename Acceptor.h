@@ -27,6 +27,9 @@ public:
     Acceptor(Reactor* reactor,EndPoint end);
     ~Acceptor();
 
+    Acceptor(const Acceptor&) = delete;
+    Acceptor& operator=(const Acceptor&) = delete;
+
     //设置为监听模式并向Reactor中注册可读事件
     //因为需要先设置回调再开始监听
     void Listen();
