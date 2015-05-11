@@ -67,7 +67,7 @@ namespace simpleton
             { }
         };
 
-        //内部代码逻辑错误，例如必定会产生的事件在查询时并没有产生...
+        //内部代码逻辑错误，例如必定会产生的事件并没有产生...
         class InternalLogicError : public std::runtime_error
         {
         public:

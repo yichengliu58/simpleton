@@ -43,10 +43,16 @@ void TcpConnection::Send(string const& s)
 {
     ////BUG！！！这里线程安全性没有处理！
 
-    //如果缓冲区没有数据且并没有关注可写事件
-    if(!_dispatcher.IsWritingSet() && _outBuffer.WriteableSize() <= 0)
+    //如果已经主动关闭则不能写入数据
+    if(_currState == ActiveClosing)
+        return;
+    _outBuffer.Push(s);
+    int res = _outBuffer.WriteIntoKernel(_socket);
+    //如果还有残留数据则关注可写事件
+    if(res)
     {
-        _outBuffer.Push(s);
+        _dispatcher.SetWriting();
+        _reactor->UpdateDispatcher(&_dispatcher);
     }
 }
 
@@ -72,16 +78,18 @@ void TcpConnection::handleRead()
     }
 }
 
-
+//只要写事件被关注就会触发这里
 void TcpConnection::handleWrite()
 {
-    //如果写事件正在被关注且缓冲区有数据待写入
-    if(_dispatcher.IsWritingSet() && _outBuffer.WriteableSize() > 0) {
+    //如果写事件正在被关注且缓冲区有数据待读出并写入内核
+    if(_dispatcher.IsWritingSet() && _outBuffer.ReadableSize() > 0)
+    {
         //则将缓冲区数据继续写入
         bool res = _outBuffer.WriteIntoKernel(_socket);
-        //如果这次写完数据了则不再关注写事件
-        if (!res) {
-            //先更新写事件
+        //没写完继续关注否则取消关注
+        if (!res)
+        {
+            //取消写事件
             _dispatcher.UnsetWriting();
             _reactor->UpdateDispatcher(&_dispatcher);
             //如果此时连接正在被主动关闭
@@ -92,13 +100,16 @@ void TcpConnection::handleWrite()
 
 void TcpConnection::handleClose()
 {
-    _currState = Disconnecting;
+    //设置为正在被动关闭
+    _currState = PassiveClosing;
+    //关闭本地读端
+    _socket.ShutdownRead();
     //首先清除分派器上所有事件
     _dispatcher.UnsetAllEvents();
     //从Reactor上移除本连接的分派器
     _reactor->DeleteDispatcher(&_dispatcher);
     //调用被动关闭连接时的回调（由TcpServer提供）
-    _onPassiveClosing(shared_from_this());
+    _removeConnCallback(shared_from_this());
 }
 
 void TcpConnection::handleError()

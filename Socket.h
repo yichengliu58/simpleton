@@ -92,7 +92,7 @@ public:
     void ShutdownRead();
 
     //获取套接字当前错误（getsockopt）
-    int GetSocketError();
+    const int GetSocketError() const;
 
     //接受连接
     //成功时返回新的Socket对象并设置EndPoint对象

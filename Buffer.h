@@ -105,6 +105,7 @@ public:
 
 
     //当需要向缓冲区写入数据时使用
+    //外部写入接口
     void Push(const string&);
     void Push(const char* ,size_t len);
 

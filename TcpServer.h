@@ -50,7 +50,7 @@ private:
     void handleNewConn(Socket&&,const EndPoint&);
     //在TcpConnection处理关闭事件时调用
     //负责将参数指定的连接对象从本Server对象中的映射表删除
-    void handleConnClosing(const TcpConnectionPtr&);
+    void removeConnection(const TcpConnectionPtr&);
 
     //用于保存关联到的反应器对象
     Reactor* _reactor;

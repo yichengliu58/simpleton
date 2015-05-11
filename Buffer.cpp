@@ -41,6 +41,12 @@ bool Buffer::WriteIntoKernel(const Socket& sock)
     size_t readable = ReadableSize();
     //调用send写入数据
     ssize_t res = ::send(sock.GetFd(), WriteableIndex(), readable, 0);
+    //处理错误
+    if(res < 0 && errno != EWOULDBLOCK)
+    {
+        //出现错误不移动索引直接抛异常
+        throw exceptions::ApiExecError("Buffer::WriteIntoKernel中write",sock.GetSocketError());
+    }
     //移动可读区域索引
     _readIndex += res;
     //如果索引相遇则重新置零

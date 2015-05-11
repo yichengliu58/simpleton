@@ -20,7 +20,7 @@ using namespace std;
 namespace simpleton
 {
 //定义四种连接状态
-enum ConnState{Connecting,Connected,Disconnecting,Disconnected};
+enum ConnState{Connecting,Connected,ActiveClosing,PassiveClosing,Disconnected};
 
 class TcpConnection : public enable_shared_from_this<TcpConnection>
 {
@@ -73,7 +73,11 @@ public:
     void ConnectionEstablished();
 
     //用于在此连接上无阻塞发送数据
+    //外部发送接口
     void Send(const string&);
+
+    //关闭连接的方法
+    void Close();
 private:
     //这些回调供dispatcher调用
     //最初的获得的事件会先调用这里的回调
@@ -103,7 +107,7 @@ private:
 
     //这里的回调由TcpServer提供
     //连接正在被动关闭调用Server的方法将本连接从其中移除
-    function<void(const shared_ptr<TcpConnection>&)> _onPassiveClosing;
+    function<void(const shared_ptr<TcpConnection>&)> _removeConnCallback;
 
     //这里的回调是用户提供的
     //新连接创建（接受）完成
