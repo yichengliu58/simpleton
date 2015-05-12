@@ -34,6 +34,8 @@ TcpServer::~TcpServer()
 
 void TcpServer::removeConnection(const TcpConnectionPtr& conn)
 {
+    //先调用户回调
+    _passiveClosingCallback(conn);
     //删除连接对象
     _connections.erase(conn->ToString());
 }
@@ -50,7 +52,6 @@ void TcpServer::handleNewConn(Socket&& sock, const EndPoint& peer)
     //设置新建连接的回调
     newConn->SetConnEstablishedCallback(_newConnCallback);
     newConn->SetNewMsgCallback(_newMessageCallback);
-    newConn->SetPassiveClosingCallback(_passiveClosingCallback);
     //设置连接被动关闭时调用的本Server的方法来移除该连接
     newConn->SetRemoveThisCallback(bind(&TcpServer::removeConnection,this,_1));
     //调用新建连接后的用户回调

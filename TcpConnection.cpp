@@ -12,8 +12,7 @@ TcpConnection::TcpConnection(const string& name,Reactor* reactor, Socket&& connS
      _reactor(reactor),
      _socket(std::move(connSock)),
      _localAddr(local),_peerAddr(peer),
-     _dispatcher(_socket.GetFd()),
-     _isCloseCalled(false)
+     _dispatcher(_socket.GetFd())
 {
     //首先设置本连接的分派器的各种回调
     _dispatcher.SetReadCallback(bind(&TcpConnection::handleRead,this));
@@ -46,54 +45,42 @@ void TcpConnection::ConnectionEstablished()
 
 void TcpConnection::ConnectionRemoved()
 {
-    //从Reactor上移除本连接的分派器
+    _currState = Disconnected;
     _dispatcher.UnsetAllEvents();
     _reactor->DeleteDispatcher(&_dispatcher);
-    //调用被动关闭连接时的回调（由TcpServer提供）
-    //将本连接指针移除从而导致本连接对象析构
-    //完全关闭
-
-    //此时本连接的引用只有这里的临时变量和TcpServer里的记录
-    //本方法执行完毕后连接应该被析构
-    auto guard = shared_from_this();
     if(_removeConnCallback)
-        _removeConnCallback(guard);
+        _removeConnCallback(shared_from_this());
 }
 
-void TcpConnection::Send(string const& s)
-{
+void TcpConnection::Send(string const& s) {
     ////BUG！！！这里线程安全性没有处理！
 
     //如果连接正在关闭则无法发送直接返回
-    if(_currState == Disconnecting)
-        return;
-    _outBuffer.Push(s);
-    int res = _outBuffer.WriteIntoKernel(_socket);
-    //如果还有残留数据则关注可写事件
-    if(res)
+    if (_currState == Connected)
     {
-        _dispatcher.SetWriting();
-        _reactor->UpdateDispatcher(&_dispatcher);
+        _outBuffer.Push(s);
+        int res = _outBuffer.WriteIntoKernel(_socket);
+        //如果还有残留数据则关注可写事件
+        if (res)
+        {
+            _dispatcher.SetWriting();
+            _reactor->UpdateDispatcher(&_dispatcher);
+        }
     }
 }
 
-void TcpConnection::Close() {
+void TcpConnection::Shutdown()
+{
     ////BUG！！！线程安全性没有处理！
 
-    //如果调用时发现这个已经被调用过了就啥也不干返回
-    if(_isCloseCalled)
-        return;
-    //检测奇怪的异常条件
-    if (_currState == Connecting || _currState == Disconnected)
-        throw exceptions::InternalLogicError("TcpConnection::Close");
-    //设置状态为正在关闭
-    //此时可能正在主动关闭但不影响
-    _currState = Disconnecting;
-    //如果没有关注写事件并且输出缓冲区没有待读出数据则关闭写端
-    if(!_dispatcher.IsWritingSet() && _outBuffer.ReadableSize() <= 0)
-        _socket.ShutdownWrite();
-    //做完这些操作将保护字段设置为真防止二次调用
-    _isCloseCalled = true;
+    if(_currState == Connected)
+    {
+        //设置状态为正在关闭
+        _currState = Disconnecting;
+        //如果没有关注写事件并且输出缓冲区没有待读出数据则关闭写端
+        if (!_dispatcher.IsWritingSet() && _outBuffer.ReadableSize() <= 0)
+            _socket.ShutdownWrite();
+    }
 }
 
 
@@ -108,18 +95,7 @@ void TcpConnection::handleRead()
     }
     else if(res == 0)
     {
-        //连接状态处于正常时
-        if(_currState == Connected)
-            handleClose();
-        //如果已经开始关闭过程则应该是主动关闭了本地写端
-        //并且对方也关闭了
-        else if(_currState == Disconnecting)
-        {
-            //关闭本地读端
-            _socket.ShutdownRead();
-            //移除连接
-            ConnectionRemoved();
-        }
+        handleClose();
     }
     else
     {
@@ -141,27 +117,35 @@ void TcpConnection::handleWrite()
             //取消写事件
             _dispatcher.UnsetWriting();
             _reactor->UpdateDispatcher(&_dispatcher);
-            //如果此时正在关闭（不论主动和被动）则数据也写完了，连接应该被关闭
+            //如果正在主动关闭则直接关闭
+            //关闭写端后等待对方关闭其写端
+            //本端再执行handleClose
             if (_currState == Disconnecting)
-            {
                 _socket.ShutdownWrite();
-                ConnectionRemoved();
-            }
         }
     }
 }
 
+
+//只要进入本事件处理方法内则说明对方关闭了连接
+//不论是关闭写端还是直接关闭（close）
+//那么不能在发送任何数据
+//缓冲区中未发送的应该被丢弃（直接析构）
 void TcpConnection::handleClose()
 {
-    //设置为正在关闭
-    _currState = Disconnecting;
-    //关闭本地读端
-    _socket.ShutdownRead();
-    //清除分派器上所有事件
-    _dispatcher.UnsetAllEvents();
-    //调用用户回调
-    if(_onPassiveClosing)
-        _onPassiveClosing(shared_from_this());
+    //异常情况未处理！！！！！
+    if (_currState == Connected)
+    {
+        //关闭本地读端
+        _socket.ShutdownRead();
+        //清除分派器上所有事件
+        _dispatcher.UnsetAllEvents();
+        //用户回调
+        if (_onPassiveClosing)
+            _onConnEstablished(shared_from_this());
+        //移除连接
+        ConnectionRemoved();
+    }
 }
 
 void TcpConnection::handleError()
