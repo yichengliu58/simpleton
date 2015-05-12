@@ -4,6 +4,7 @@
 
 #include "Buffer.h"
 #include <algorithm>
+#include <iostream>
 
 using namespace std;
 using namespace simpleton;
@@ -40,7 +41,7 @@ bool Buffer::WriteIntoKernel(const Socket& sock)
         return false;
     size_t readable = ReadableSize();
     //调用send写入数据
-    ssize_t res = ::send(sock.GetFd(), WriteableIndex(), readable, 0);
+    ssize_t res = ::send(sock.GetFd(), ReadableIndex(), readable, 0);
     //处理错误
     if(res < 0 && errno != EWOULDBLOCK)
     {

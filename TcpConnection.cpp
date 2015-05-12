@@ -141,7 +141,7 @@ void TcpConnection::handleWrite()
 void TcpConnection::handleClose()
 {
     //异常情况未处理！！！！！
-    if (_currState == Connected)
+    if (_currState == Connected || _currState == Disconnecting)
     {
         //关闭本地读端
         _socket.ShutdownRead();
@@ -149,7 +149,7 @@ void TcpConnection::handleClose()
         _dispatcher.UnsetAllEvents();
         //用户回调
         if (_onPassiveClosing)
-            _onConnEstablished(shared_from_this());
+            _onPassiveClosing(shared_from_this());
         //移除连接
         ConnectionRemoved();
     }

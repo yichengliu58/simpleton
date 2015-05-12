@@ -58,6 +58,8 @@ std::string simpleton::exceptions::GetErrnoInfo(int num) {
             return "操作正在被处理";
         case EADDRINUSE:
             return "地址正在被使用";
+        case ENOTCONN:
+            return "指定套接字没有连接";
         default:
             return std::to_string(num);
     }

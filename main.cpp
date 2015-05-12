@@ -18,13 +18,13 @@ void onConnected(const shared_ptr<TcpConnection>& ptr)
 void onNewMessage(const shared_ptr<TcpConnection>& conn,Buffer& msg)
 {
     cout << conn->GetPeerAddr().ToString() + " says: " + msg.GetAllReadable() << endl;
-    conn->Send("fuckyou!");
+    conn->Send(msg.GetAllReadable());
+    conn->Shutdown();
 }
 
 void onPassiveClosing(const shared_ptr<TcpConnection>& conn)
 {
     cout << conn->ToString() << " is closing " << endl;
-    //conn->Send("don't let me go ! keep chatting! ");
 }
 
 int main()
