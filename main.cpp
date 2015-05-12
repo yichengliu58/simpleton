@@ -24,7 +24,7 @@ void onNewMessage(const shared_ptr<TcpConnection>& conn,Buffer& msg)
 void onPassiveClosing(const shared_ptr<TcpConnection>& conn)
 {
     cout << conn->ToString() << " is closing " << endl;
-    conn->Send("don't let me go ! keep chatting! ");
+    //conn->Send("don't let me go ! keep chatting! ");
 }
 
 int main()
