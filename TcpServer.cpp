@@ -52,8 +52,9 @@ void TcpServer::handleNewConn(Socket&& sock, const EndPoint& peer)
     //设置新建连接的回调
     newConn->SetConnEstablishedCallback(_newConnCallback);
     newConn->SetNewMsgCallback(_newMessageCallback);
+    newConn->SetPassiveClosingCallback(_passiveClosingCallback);
     //设置连接被动关闭时调用的本Server的方法来移除该连接
-    newConn->SetPassiveClosingCallback(bind(&TcpServer::removeConnection,this,_1));
+    newConn->SetRemoveThisCallback(bind(&TcpServer::removeConnection,this,_1));
     //调用新建连接后的用户回调
     newConn->ConnectionEstablished();
 }

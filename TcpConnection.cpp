@@ -39,12 +39,28 @@ void TcpConnection::ConnectionEstablished()
         _onConnEstablished(shared_from_this());
 }
 
+void TcpConnection::ConnectionRemoved()
+{
+    //从Reactor上移除本连接的分派器
+    _dispatcher.UnsetAllEvents();
+    _reactor->DeleteDispatcher(&_dispatcher);
+    //调用被动关闭连接时的回调（由TcpServer提供）
+    //将本连接指针移除从而导致本连接对象析构
+    //完全关闭
+
+    //此时本连接的引用只有这里的临时变量和TcpServer里的记录
+    //本方法执行完毕后连接应该被析构
+    auto guard = shared_from_this();
+    if(_removeConnCallback)
+        _removeConnCallback(guard);
+}
+
 void TcpConnection::Send(string const& s)
 {
     ////BUG！！！这里线程安全性没有处理！
 
     //如果已经主动关闭则不能写入数据
-    if(_currState == ActiveClosing)
+    if(_currState == Disconnecting)
         return;
     _outBuffer.Push(s);
     int res = _outBuffer.WriteIntoKernel(_socket);
@@ -56,6 +72,16 @@ void TcpConnection::Send(string const& s)
     }
 }
 
+void TcpConnection::Close()
+{
+    ////BUG！！！线程安全性没有处理！
+
+    if(_currState == Connecting)
+        throw exceptions::InternalLogicError("TcpConnection::Close");
+    //如果从正常连接状态进入主动关闭
+    if(_currState == Connected)
+        _currState = ActiveClosing;
+}
 
 
 void TcpConnection::handleRead()
@@ -69,8 +95,18 @@ void TcpConnection::handleRead()
     }
     else if(res == 0)
     {
-        //在处理关闭逻辑之前需要将发送缓冲区的东西发送完
-        handleClose();
+        //连接状态处于正常时
+        if(_currState == Connected)
+            handleClose();
+        //如果已经开始关闭过程则应该是主动关闭了本地写端
+        //并且对方也关闭了
+        else if(_currState == Disconnecting)
+        {
+            //关闭本地读端
+            _socket.ShutdownRead();
+            //移除连接
+            ConnectionRemoved();
+        }
     }
     else
     {
@@ -86,30 +122,33 @@ void TcpConnection::handleWrite()
     {
         //则将缓冲区数据继续写入
         bool res = _outBuffer.WriteIntoKernel(_socket);
-        //没写完继续关注否则取消关注
+        //如果数据写完的话
         if (!res)
         {
             //取消写事件
             _dispatcher.UnsetWriting();
             _reactor->UpdateDispatcher(&_dispatcher);
-            //如果此时连接正在被主动关闭
-            //if(_currState == Disconnecting)
+            //如果此时正在被动关闭则数据也写完了，连接应该被关闭
+            if(_currState == Disconnecting)
+                ConnectionRemoved();
+            //如果正在主动关闭应该调用Close ？？？
+            /*else if(_currState == ActiveClosing)
+                Close();*/
         }
     }
 }
 
 void TcpConnection::handleClose()
 {
-    //设置为正在被动关闭
-    _currState = PassiveClosing;
+    //设置为正在关闭
+    _currState = Disconnecting;
     //关闭本地读端
     _socket.ShutdownRead();
-    //首先清除分派器上所有事件
+    //清除分派器上所有事件
     _dispatcher.UnsetAllEvents();
-    //从Reactor上移除本连接的分派器
-    _reactor->DeleteDispatcher(&_dispatcher);
-    //调用被动关闭连接时的回调（由TcpServer提供）
-    _removeConnCallback(shared_from_this());
+    //调用用户回调
+    if(_onPassiveClosing)
+        _onPassiveClosing(shared_from_this());
 }
 
 void TcpConnection::handleError()

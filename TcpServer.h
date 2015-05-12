@@ -68,6 +68,7 @@ private:
     //用户提供的新消息到达后的回调函数
     function<void(const TcpConnectionPtr&,Buffer& )> _newMessageCallback;
     //用户提供的被动关闭连接后的回调函数
+    //这里还可以调用Send！
     function<void(const TcpConnectionPtr&)> _passiveClosingCallback;
 };
 }
