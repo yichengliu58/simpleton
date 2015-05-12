@@ -130,13 +130,13 @@ Socket Socket::Accept(EndPoint& peer)
 void Socket::ShutdownWrite()
 {
     if(::shutdown(_sockfd,SHUT_WR) < 0)
-        throw std::runtime_error(std::to_string(_sockfd) + "：关闭套接字写端失败！");
+        throw exceptions::ApiExecError("Socket::ShutdownWrite",errno);
 }
 
 void Socket::ShutdownRead()
 {
     if(::shutdown(_sockfd,SHUT_RD) < 0)
-        throw std::runtime_error(std::to_string(_sockfd) + "：关闭套接字读端失败！");
+        throw exceptions::ApiExecError("Socket::ShutdownRead",errno);
 }
 
 const int Socket::GetSocketError() const

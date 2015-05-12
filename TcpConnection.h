@@ -103,6 +103,9 @@ private:
     Reactor* _reactor;
     //当前连接状态
     ConnState _currState;
+    //表示是否开始主动关闭（用户是否调用了Close）
+    //用于控制Send和Close行为的同步
+    bool _isCloseCalled;
     //本TCP连接的连接套接字
     Socket _socket;
     //保存本地连接地址

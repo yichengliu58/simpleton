@@ -34,10 +34,8 @@ TcpServer::~TcpServer()
 
 void TcpServer::removeConnection(const TcpConnectionPtr& conn)
 {
-    //先删除连接对象
+    //删除连接对象
     _connections.erase(conn->ToString());
-    //调用用户回调
-    _passiveClosingCallback(conn);
 }
 
 void TcpServer::handleNewConn(Socket&& sock, const EndPoint& peer)

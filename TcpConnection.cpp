@@ -8,7 +8,12 @@
 using namespace simpleton;
 
 TcpConnection::TcpConnection(const string& name,Reactor* reactor, Socket&& connSock, EndPoint const& local, EndPoint const& peer)
-:_name(name),_reactor(reactor),_socket(std::move(connSock)),_localAddr(local),_peerAddr(peer),_dispatcher(_socket.GetFd())
+    :_name(name),
+     _reactor(reactor),
+     _socket(std::move(connSock)),
+     _localAddr(local),_peerAddr(peer),
+     _dispatcher(_socket.GetFd()),
+     _isCloseCalled(false)
 {
     //首先设置本连接的分派器的各种回调
     _dispatcher.SetReadCallback(bind(&TcpConnection::handleRead,this));
@@ -26,6 +31,7 @@ TcpConnection::TcpConnection(const string& name,Reactor* reactor, Socket&& connS
 
 TcpConnection::~TcpConnection()
 {
+    cout << "dddddddddddddddd" << endl;
     _reactor = nullptr;
     _currState = Disconnected;
 }
@@ -60,7 +66,7 @@ void TcpConnection::Send(string const& s)
     ////BUG！！！这里线程安全性没有处理！
 
     //如果已经主动关闭则不能写入数据
-    if(_currState == Disconnecting)
+    if(_isCloseCalled)
         return;
     _outBuffer.Push(s);
     int res = _outBuffer.WriteIntoKernel(_socket);
@@ -75,25 +81,20 @@ void TcpConnection::Send(string const& s)
 void TcpConnection::Close() {
     ////BUG！！！线程安全性没有处理！
 
-    //这个保护字段保证本方法只被调用一次
-    static bool guard = false;
     //如果调用时发现这个已经被调用过了就啥也不干返回
-    if(guard)
+    if(_isCloseCalled)
         return;
     //检测奇怪的异常条件
     if (_currState == Connecting || _currState == Disconnected)
         throw exceptions::InternalLogicError("TcpConnection::Close");
     //设置状态为正在关闭
+    //此时可能正在主动关闭但不影响
     _currState = Disconnecting;
     //如果没有关注写事件并且输出缓冲区没有待读出数据则关闭写端
     if(!_dispatcher.IsWritingSet() && _outBuffer.ReadableSize() <= 0)
-    {
         _socket.ShutdownWrite();
-        //移除连接
-        ConnectionRemoved();
-    }
     //做完这些操作将保护字段设置为真防止二次调用
-    guard = true;
+    _isCloseCalled = true;
 }
 
 
