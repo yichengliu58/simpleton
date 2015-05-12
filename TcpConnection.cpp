@@ -31,7 +31,6 @@ TcpConnection::TcpConnection(const string& name,Reactor* reactor, Socket&& connS
 
 TcpConnection::~TcpConnection()
 {
-    cout << "dddddddddddddddd" << endl;
     _reactor = nullptr;
     _currState = Disconnected;
 }
@@ -65,8 +64,8 @@ void TcpConnection::Send(string const& s)
 {
     ////BUG！！！这里线程安全性没有处理！
 
-    //如果已经主动关闭则不能写入数据
-    if(_isCloseCalled)
+    //如果连接正在关闭则无法发送直接返回
+    if(_currState == Disconnecting)
         return;
     _outBuffer.Push(s);
     int res = _outBuffer.WriteIntoKernel(_socket);
