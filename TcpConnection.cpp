@@ -72,15 +72,28 @@ void TcpConnection::Send(string const& s)
     }
 }
 
-void TcpConnection::Close()
-{
+void TcpConnection::Close() {
     ////BUG！！！线程安全性没有处理！
 
-    if(_currState == Connecting)
+    //这个保护字段保证本方法只被调用一次
+    static bool guard = false;
+    //如果调用时发现这个已经被调用过了就啥也不干返回
+    if(guard)
+        return;
+    //检测奇怪的异常条件
+    if (_currState == Connecting || _currState == Disconnected)
         throw exceptions::InternalLogicError("TcpConnection::Close");
-    //如果从正常连接状态进入主动关闭
-    if(_currState == Connected)
-        _currState = ActiveClosing;
+    //设置状态为正在关闭
+    _currState = Disconnecting;
+    //如果没有关注写事件并且输出缓冲区没有待读出数据则关闭写端
+    if(!_dispatcher.IsWritingSet() && _outBuffer.ReadableSize() <= 0)
+    {
+        _socket.ShutdownWrite();
+        //移除连接
+        ConnectionRemoved();
+    }
+    //做完这些操作将保护字段设置为真防止二次调用
+    guard = true;
 }
 
 
@@ -128,12 +141,12 @@ void TcpConnection::handleWrite()
             //取消写事件
             _dispatcher.UnsetWriting();
             _reactor->UpdateDispatcher(&_dispatcher);
-            //如果此时正在被动关闭则数据也写完了，连接应该被关闭
-            if(_currState == Disconnecting)
+            //如果此时正在关闭（不论主动和被动）则数据也写完了，连接应该被关闭
+            if (_currState == Disconnecting)
+            {
+                _socket.ShutdownWrite();
                 ConnectionRemoved();
-            //如果正在主动关闭应该调用Close ？？？
-            /*else if(_currState == ActiveClosing)
-                Close();*/
+            }
         }
     }
 }
