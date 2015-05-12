@@ -69,6 +69,13 @@ void TcpConnection::Send(string const& s) {
     }
 }
 
+void TcpConnection::ForceClose()
+{
+    if(_currState == Connected)
+        _currState = Disconnecting;
+    handleClose();
+}
+
 void TcpConnection::Shutdown()
 {
     ////BUG！！！线程安全性没有处理！

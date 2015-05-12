@@ -82,9 +82,12 @@ public:
     //用于在此连接上无阻塞发送数据
     //外部发送接口
     void Send(const string&);
-
     //关闭连接的外部接口
     void Shutdown();
+    //强制关闭连接
+    //正常连接时则丢弃缓冲区未发送数据
+    //正在主动关闭时不等待对端关闭直接结束
+    void ForceClose();
 private:
     //这些回调供dispatcher调用
     //最初的获得的事件会先调用这里的回调
