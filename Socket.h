@@ -59,7 +59,7 @@ public:
     }
 
     //检测描述符值是否有效
-    bool IsValid()
+    bool IsValid() const
     {
         return _sockfd >= 0;
     }

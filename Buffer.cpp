@@ -11,7 +11,12 @@ using namespace simpleton;
 
 string Buffer::GetAllReadable()
 {
-    return string(_buffer.begin() + _readIndex,_buffer.begin() + _writeIndex);
+    //产生结果字符串
+    string res(_buffer.begin() + _readIndex,_buffer.begin() + _writeIndex);
+    //修改索引值
+    _readIndex += res.size();
+
+    return res;
 }
 
 string Buffer::GetUntilCRLF()
@@ -36,17 +41,19 @@ string Buffer::GetUntilCRLF()
 //所以这里处理可读区域
 bool Buffer::WriteIntoKernel(const Socket& sock)
 {
+    if(!sock.IsValid())
+        throw exceptions::InternalLogicError("Buffer::WriteIntoKernel");
     //如果没有数据可读直接返回false
     if (ReadableSize() <= 0)
         return false;
     size_t readable = ReadableSize();
-    //调用send写入数据
-    ssize_t res = ::send(sock.GetFd(), ReadableIndex(), readable, 0);
+    //调用write写入数据
+    ssize_t res = ::write(sock.GetFd(), ReadableIndex(), readable);
     //处理错误
     if(res < 0 && errno != EWOULDBLOCK)
     {
         //出现错误不移动索引直接抛异常
-        throw exceptions::ApiExecError("Buffer::WriteIntoKernel中write",sock.GetSocketError());
+        throw exceptions::ApiExecError("Buffer::WriteIntoKernel",sock.GetSocketError());
     }
     //移动可读区域索引
     _readIndex += res;
@@ -65,6 +72,8 @@ bool Buffer::WriteIntoKernel(const Socket& sock)
 //使用栈内存分散读来解决不知道读多少数据的问题
 size_t Buffer::ReadFromKernel(const Socket& sock)
 {
+    if(!sock.IsValid())
+        throw exceptions::InternalLogicError("Buffer::ReadFromKernel");
     //开辟一个足够大的栈空间
     //默认线程最大栈空间为8M
     char tmp[TmpBufSize];
