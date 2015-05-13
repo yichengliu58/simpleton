@@ -17,8 +17,9 @@ void onConnected(const shared_ptr<TcpConnection>& ptr)
 
 void onNewMessage(const shared_ptr<TcpConnection>& conn,Buffer& msg)
 {
-    cout << conn->GetPeerAddr().ToString() + " says: " + msg.GetAllReadable() << endl;
-    conn->Send(msg.GetAllReadable());
+    string gete = msg.GetAllReadable();
+    cout << conn->GetPeerAddr().ToString() + " says: " + gete << endl;
+    conn->Send(gete);
     conn->Shutdown();
 }
 
