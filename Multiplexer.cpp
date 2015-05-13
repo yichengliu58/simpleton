@@ -4,7 +4,7 @@
 
 #include "Multiplexer.h"
 #include "Exceptions.h"
-
+#include <iostream>
 using namespace simpleton;
 
 Multiplexer::Multiplexer()
@@ -92,7 +92,7 @@ void Multiplexer::Wait(int timeout,vector<Dispatcher*>& result)
             }
         }
         //动态改变内部eventList大小
-        if(static_cast<unsigned int>(eventnum) >= _eventList.size())
+        if (static_cast<unsigned int>(eventnum) >= _eventList.size())
             _eventList.resize(_eventList.size() * 2);
     }
     else if(eventnum == 0)

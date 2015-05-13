@@ -70,7 +70,7 @@ bool Buffer::WriteIntoKernel(const Socket& sock)
 //从内核读取数据至缓冲区
 //所以这里移动可写索引（增加可读区域大小）
 //使用栈内存分散读来解决不知道读多少数据的问题
-size_t Buffer::ReadFromKernel(const Socket& sock)
+ssize_t Buffer::ReadFromKernel(const Socket& sock)
 {
     if(!sock.IsValid())
         throw exceptions::InternalLogicError("Buffer::ReadFromKernel");
@@ -85,9 +85,11 @@ size_t Buffer::ReadFromKernel(const Socket& sock)
     io[1].iov_base = tmp;
     io[1].iov_len = sizeof(tmp);
     //进行分散读
-    ssize_t res = readv(sock.GetFd(),io,2);
+    ssize_t res = ::readv(sock.GetFd(),io,2);
+    if(res < 0)
+        return res;
     //如果读出的数量大于缓冲区空间则将多余的添加进去
-    if(res > writeable)
+    else if(res > static_cast<ssize_t>(writeable))
     {
         _writeIndex = _buffer.size();
         Push(tmp,res - writeable);
@@ -96,7 +98,7 @@ size_t Buffer::ReadFromKernel(const Socket& sock)
     else if(res <= writeable)
         _writeIndex += res;
 
-    return static_cast<size_t>(res);
+    return res;
 }
 
 void Buffer::Push(const char* msg, size_t len)

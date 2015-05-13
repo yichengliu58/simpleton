@@ -95,7 +95,7 @@ public:
     //内部会调用recv从内核缓冲区拿走数据
     //返回值就是recv的返回值
     //可以用于判断是否连接关闭
-    size_t ReadFromKernel(const Socket&);
+    ssize_t ReadFromKernel(const Socket&);
 
     //当缓冲区内部有更多数据待写入时调用
     //将缓冲区内部数据写入内核

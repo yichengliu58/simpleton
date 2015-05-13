@@ -1,8 +1,6 @@
 //
 // Created by lyc-fedora on 15-5-1.
 //
-
-#include <iostream>
 #include "TcpConnection.h"
 
 using namespace simpleton;
@@ -93,7 +91,7 @@ void TcpConnection::Shutdown()
 void TcpConnection::handleRead()
 {
     //首先将内核缓冲区的数据读入到本缓冲区
-    size_t res = _inBuffer.ReadFromKernel(_socket);
+    ssize_t res = _inBuffer.ReadFromKernel(_socket);
     //根据不同的返回值调用不同的处理方法
     if(res > 0)
     {
@@ -154,6 +152,6 @@ void TcpConnection::handleClose()
 
 void TcpConnection::handleError()
 {
+    //这里的错误码没有使用！！
     int err = _socket.GetSocketError();
-    cout << "handleError:" << err << endl;
 }
