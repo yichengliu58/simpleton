@@ -79,7 +79,6 @@ void TcpConnection::ForceClose()
 void TcpConnection::Shutdown()
 {
     ////BUG！！！线程安全性没有处理！
-
     if(_currState == Connected)
     {
         //设置状态为正在关闭
@@ -143,8 +142,6 @@ void TcpConnection::handleClose()
     //异常情况未处理！！！！！
     if (_currState == Connected || _currState == Disconnecting)
     {
-        //关闭本地读端
-        _socket.ShutdownRead();
         //清除分派器上所有事件
         _dispatcher.UnsetAllEvents();
         //用户回调
@@ -158,4 +155,5 @@ void TcpConnection::handleClose()
 void TcpConnection::handleError()
 {
     int err = _socket.GetSocketError();
+    cout << "handleError:" << err << endl;
 }
