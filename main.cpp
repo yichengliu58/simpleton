@@ -4,6 +4,7 @@
 #include "Socket.h"
 #include "Reactor.h"
 #include "TcpServer.h"
+#include <algorithm>
 
 using namespace std;
 using namespace simpleton;
@@ -15,8 +16,10 @@ void onConnected(const shared_ptr<TcpConnection>& ptr)
 
 void onNewMessage(const shared_ptr<TcpConnection>& conn,Buffer& msg)
 {
-    cout << "收到 " << msg.ReadableSize() << " 字节" << endl;
-    conn->Send(msg.GetAllReadable());
+    //cout << msg.GetAllReadable() << endl;
+    string tmp;
+    if(msg.GetUntilCRLF(tmp))
+        cout << tmp << endl;
 }
 
 void onPassiveClosing(const shared_ptr<TcpConnection>& conn)

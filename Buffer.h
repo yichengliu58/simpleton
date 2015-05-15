@@ -5,6 +5,7 @@
 #ifndef SIMPLETON_BUFFER_H
 #define SIMPLETON_BUFFER_H
 
+#include <iostream>
 #include <vector>
 #include "Socket.h"
 
@@ -15,8 +16,8 @@ namespace simpleton
 class Buffer
 {
 public:
-    //定义初始缓冲区大小（2KB）
-    static const size_t BufferInitSize = 128;
+    //定义初始缓冲区大小（以太网MTU）
+    static const size_t BufferInitSize = 1536;
     //定义缓冲区读数据时临时栈空间大小（32KB）
     static const size_t TmpBufSize = 1024*32;
 
@@ -88,7 +89,7 @@ public:
     string PeekAllReadable();
     //读取所有数据直到回车换行符（CRLF）
     //如果所有数据中不存在CRLF则返回空字符串
-    string GetUntilCRLF();
+    bool GetUntilCRLF(string&);
 
 
 

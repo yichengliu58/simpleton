@@ -4,7 +4,6 @@
 
 #include "Buffer.h"
 #include <algorithm>
-#include <iostream>
 
 using namespace std;
 using namespace simpleton;
@@ -31,21 +30,21 @@ string Buffer::PeekAllReadable()
     return string(_buffer.begin() + _readIndex,_buffer.begin() + _writeIndex);
 }
 
-string Buffer::GetUntilCRLF()
+bool Buffer::GetUntilCRLF(string& res)
 {
     //先查找是否存在CRLF
-    char crlf[] = {'\r','\n'};
+    const char crlf[] = {'a','b'};
     auto it = search(_buffer.begin() + _readIndex,_buffer.begin() + _writeIndex,crlf,crlf + 2);
     //没找到的话返回空字符串
     if(it == _buffer.begin() + _writeIndex)
-        return string();
+        return false;
     else
     {
-        string res(_buffer.begin() + _readIndex,it);
+        res = string(_buffer.begin() + _readIndex,it);
         //修改可读索引值
         _readIndex += res.size();
         //返回字符串
-        return res;
+        return true;
     }
 }
 
