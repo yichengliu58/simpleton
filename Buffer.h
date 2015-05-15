@@ -15,9 +15,9 @@ namespace simpleton
 class Buffer
 {
 public:
-    //定义初始缓冲区大小
-    static const size_t BufferInitSize = 2048;
-    //定义缓冲区读数据时临时栈空间大小
+    //定义初始缓冲区大小（2KB）
+    static const size_t BufferInitSize = 128;
+    //定义缓冲区读数据时临时栈空间大小（32KB）
     static const size_t TmpBufSize = 1024*32;
 
     //构造时将两个索引值定位到开头（= 0）

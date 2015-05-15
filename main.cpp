@@ -15,9 +15,8 @@ void onConnected(const shared_ptr<TcpConnection>& ptr)
 
 void onNewMessage(const shared_ptr<TcpConnection>& conn,Buffer& msg)
 {
-    cout << msg.ReadableSize() << endl;
-    string gete = msg.GetAllReadable();
-    conn->Send(gete);
+    cout << "收到 " << msg.ReadableSize() << " 字节" << endl;
+    conn->Send(msg.GetAllReadable());
 }
 
 void onPassiveClosing(const shared_ptr<TcpConnection>& conn)

@@ -4,17 +4,25 @@
 
 #include "Buffer.h"
 #include <algorithm>
+#include <iostream>
 
 using namespace std;
 using namespace simpleton;
 
+//从缓冲区中读取数据
+//操作可读区域
 string Buffer::GetAllReadable()
 {
     //产生结果字符串
     string res(_buffer.begin() + _readIndex,_buffer.begin() + _writeIndex);
     //修改索引值
     _readIndex += res.size();
-
+    //如果索引重合则归零（一定会重合）
+    if(_readIndex == _writeIndex)
+    {
+        _readIndex = 0;
+        _writeIndex = 0;
+    }
     return res;
 }
 
@@ -107,23 +115,30 @@ ssize_t Buffer::ReadFromKernel(const Socket& sock)
 
 void Buffer::Push(const char* msg, size_t len)
 {
-    //全部的可用空间（将总容量capacity计入）
-    size_t totalAvail = _buffer.capacity() - _writeIndex;
+    //后面全部的可用空间（将总容量capacity计入）
+    size_t backwardAvail = _buffer.capacity() - _writeIndex;
     //如果后面的不够但是前面的够用就将元素挪动到前面
-    if(len > totalAvail && len <= PreRemainedSize())
+    if(len > backwardAvail && len <= PreRemainedSize())
     {
         size_t readable = ReadableSize();
         //挪动元素填充前部剩余空间
         copy(_buffer.begin() + _readIndex,_buffer.begin() + _writeIndex,_buffer.begin());
-        //将待写入的元素放置在最后
-        _buffer.insert(_buffer.begin() + readable,msg,msg + len);
+        //将待写入的元素在后面直接赋值覆盖（地方足够大因为挪动了）
+        auto iter = _buffer.begin() + readable;
+        for(int i = 0;i < len;i++)
+        {
+            *iter = *(msg + i);
+            iter++;
+        }
         //修改可读可写索引
         _readIndex = 0;
         _writeIndex = _readIndex + readable;
     }
-        //否则要么可以直接插入要么就让他自己自动增长吧
+    //否则要么可以直接插入要么就让他自己自动增长吧
     else
     {
+        //先重置一下size使后面默认构造的元素被删除
+        _buffer.resize(_writeIndex);
         //直接向后面插入
         _buffer.insert(_buffer.begin() + _writeIndex, msg, msg + len);
         //修改可写索引
@@ -141,8 +156,13 @@ void Buffer::Push(const string& msg)
         size_t readable = ReadableSize();
         //挪动元素填充前部剩余空间
         copy(_buffer.begin() + _readIndex,_buffer.begin() + _writeIndex,_buffer.begin());
-        //将待写入的元素放置在最后
-        _buffer.insert(_buffer.begin() + readable,msg.begin(),msg.end());
+        //将待写入的元素在后面直接赋值覆盖（地方足够大因为挪动了）
+        auto ptr = _buffer.begin() + readable;
+        for(int i = 0;i < msg.length();i++)
+        {
+            *ptr = msg[i];
+            ptr++;
+        }
         //修改可读可写索引
         _readIndex = 0;
         _writeIndex = _readIndex + readable;
@@ -150,6 +170,8 @@ void Buffer::Push(const string& msg)
     //否则要么可以直接插入要么就让他自己自动增长吧
     else
     {
+        //重置大小
+        _buffer.resize(_writeIndex);
         //直接向后面插入
         _buffer.insert(_buffer.begin() + _writeIndex, msg.begin(), msg.end());
         //修改可写索引

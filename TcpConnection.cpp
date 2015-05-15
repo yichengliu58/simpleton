@@ -58,10 +58,9 @@ void TcpConnection::Send(string const& s) {
     if (_currState == Connected)
     {
         _outBuffer.Push(s);
-        //cout << _outBuffer.PeekAllReadable() << endl;
         int res = _outBuffer.WriteIntoKernel(_socket);
         //如果还有残留数据则关注可写事件
-        if (res)
+        if (res && !_dispatcher.IsWritingSet())
         {
             _dispatcher.SetWriting();
             _reactor->UpdateDispatcher(&_dispatcher);
@@ -117,6 +116,7 @@ void TcpConnection::handleWrite()
     if(_dispatcher.IsWritingSet() && _outBuffer.ReadableSize() > 0)
     {
         //则将缓冲区数据继续写入
+        cout << "存在残留" << endl;
         bool res = _outBuffer.WriteIntoKernel(_socket);
         //如果数据写完的话
         if (!res)
