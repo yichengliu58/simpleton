@@ -4,7 +4,6 @@
 
 #include "Buffer.h"
 #include <algorithm>
-#include <iostream>
 
 using namespace std;
 using namespace simpleton;
@@ -17,6 +16,11 @@ string Buffer::GetAllReadable()
     _readIndex += res.size();
 
     return res;
+}
+
+string Buffer::PeekAllReadable()
+{
+    return string(_buffer.begin() + _readIndex,_buffer.begin() + _writeIndex);
 }
 
 string Buffer::GetUntilCRLF()

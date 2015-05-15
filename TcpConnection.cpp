@@ -1,6 +1,7 @@
 //
 // Created by lyc-fedora on 15-5-1.
 //
+#include <iostream>
 #include "TcpConnection.h"
 
 using namespace simpleton;
@@ -57,6 +58,7 @@ void TcpConnection::Send(string const& s) {
     if (_currState == Connected)
     {
         _outBuffer.Push(s);
+        //cout << _outBuffer.PeekAllReadable() << endl;
         int res = _outBuffer.WriteIntoKernel(_socket);
         //如果还有残留数据则关注可写事件
         if (res)
@@ -85,6 +87,7 @@ void TcpConnection::Shutdown()
         if (!_dispatcher.IsWritingSet() && _outBuffer.ReadableSize() <= 0)
             _socket.ShutdownWrite();
     }
+    //如果已经开始关闭（必定是被动关闭）则不用处理等待移除连接就行
 }
 
 

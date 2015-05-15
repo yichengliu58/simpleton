@@ -84,7 +84,8 @@ public:
 
     //读取缓冲区中所有可读数据并以String形式返回
     string GetAllReadable();
-
+    //读取所有可读数据但是不清除缓冲区（不移动索引）
+    string PeekAllReadable();
     //读取所有数据直到回车换行符（CRLF）
     //如果所有数据中不存在CRLF则返回空字符串
     string GetUntilCRLF();

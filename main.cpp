@@ -15,10 +15,9 @@ void onConnected(const shared_ptr<TcpConnection>& ptr)
 
 void onNewMessage(const shared_ptr<TcpConnection>& conn,Buffer& msg)
 {
+    cout << msg.ReadableSize() << endl;
     string gete = msg.GetAllReadable();
-    //cout << conn->GetPeerAddr().ToString() + " says: " + gete << endl;
     conn->Send(gete);
-    conn->Shutdown();
 }
 
 void onPassiveClosing(const shared_ptr<TcpConnection>& conn)
