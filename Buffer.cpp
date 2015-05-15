@@ -64,7 +64,7 @@ bool Buffer::WriteIntoKernel(const Socket& sock)
     if(res < 0 && errno != EWOULDBLOCK)
     {
         //出现错误不移动索引直接抛异常
-        throw exceptions::ApiExecError("Buffer::WriteIntoKernel",sock.GetSocketError());
+        throw exceptions::ApiExecError("Buffer::WriteIntoKernel",errno);
     }
     //移动可读区域索引
     _readIndex += res;

@@ -17,7 +17,7 @@ class Buffer
 {
 public:
     //定义初始缓冲区大小（以太网MTU）
-    static const size_t BufferInitSize = 1536;
+    static const size_t BufferInitSize = 128;
     //定义缓冲区读数据时临时栈空间大小（32KB）
     static const size_t TmpBufSize = 1024*32;
 

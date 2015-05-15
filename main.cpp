@@ -16,10 +16,9 @@ void onConnected(const shared_ptr<TcpConnection>& ptr)
 
 void onNewMessage(const shared_ptr<TcpConnection>& conn,Buffer& msg)
 {
-    //cout << msg.GetAllReadable() << endl;
-    string tmp;
-    if(msg.GetUntilCRLF(tmp))
-        cout << tmp << endl;
+    string tmp = msg.GetAllReadable();
+    cout << "接收到: " << tmp.length() << " 字节" << endl;
+    conn->Send(tmp);
 }
 
 void onPassiveClosing(const shared_ptr<TcpConnection>& conn)
