@@ -1,7 +1,6 @@
 //
 // Created by lyc-fedora on 15-5-1.
 //
-#include <iostream>
 #include "TcpConnection.h"
 
 using namespace simpleton;
@@ -116,7 +115,6 @@ void TcpConnection::handleWrite()
     if(_dispatcher.IsWritingSet() && _outBuffer.ReadableSize() > 0)
     {
         //则将缓冲区数据继续写入
-        cout << "存在残留" << endl;
         bool res = _outBuffer.WriteIntoKernel(_socket);
         //如果数据写完的话
         if (!res)

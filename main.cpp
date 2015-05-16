@@ -5,6 +5,7 @@
 #include "Reactor.h"
 #include "TcpServer.h"
 #include <algorithm>
+#include <signal.h>
 
 using namespace std;
 using namespace simpleton;
@@ -30,7 +31,8 @@ int main()
 {
     try
     {
-        EndPoint local(12306);
+        ::signal(SIGPIPE,SIG_IGN);
+        EndPoint local("192.168.1.101",12306);
         Reactor reactor;
         TcpServer server(&reactor,local);
         server.SetNewConnCallback(onConnected);

@@ -61,9 +61,12 @@ bool Buffer::WriteIntoKernel(const Socket& sock)
     //调用write写入数据
     ssize_t res = ::write(sock.GetFd(), ReadableIndex(), readable);
     //处理错误
-    if(res < 0 && errno != EWOULDBLOCK)
+    if(res < 0)
     {
-        //出现错误不移动索引直接抛异常
+        //如果对端过早关闭连接则本端也应该关闭
+        if(errno == EWOULDBLOCK || errno == EPIPE || errno == ECONNRESET)
+            return false;
+        //其他不明错误抛出异常
         throw exceptions::ApiExecError("Buffer::WriteIntoKernel",errno);
     }
     //移动可读区域索引
@@ -175,5 +178,6 @@ void Buffer::Push(const string& msg)
         _buffer.insert(_buffer.begin() + _writeIndex, msg.begin(), msg.end());
         //修改可写索引
         _writeIndex += msg.size();
+        cout << "增长至：capacity " << _buffer.capacity() << " size " << _buffer.size() << endl;
     }
 }
