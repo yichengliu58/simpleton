@@ -8,7 +8,10 @@
 using namespace simpleton;
 
 ThreadPool::ThreadPool(unsigned int maxQueue, unsigned int maxNum)
-:_maxNum(0),_maxQueue(maxQueue),_isRunning(false),_joiner(_threads)
+    :_maxNum(0),
+     _maxQueue(maxQueue),
+     _isRunning(false),
+     _joiner(_threads)
 {
     unsigned int recommend = thread::hardware_concurrency();
     _maxNum = maxNum > recommend ? maxNum : recommend;
@@ -40,6 +43,7 @@ ThreadPool::~ThreadPool()
 
 void ThreadPool::Submit(const TaskType& task)
 {
+    cout << "Submit" << endl;
     unique_lock<mutex> guard(_mtx);
     while (_taskQueue.size() >= _maxQueue && _isRunning)
         _condFull.wait(guard);

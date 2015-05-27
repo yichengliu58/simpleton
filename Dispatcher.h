@@ -21,7 +21,11 @@ class Dispatcher
 public:
     //必须指定与之关联的描述符值
     Dispatcher(int fd)
-            : _fd(fd), _events(0), _revents(0),_isReading(false),_isWriting(false)
+            : _fd(fd),
+              _events(0),
+              _revents(0),
+              _isReading(false),
+              _isWriting(false)
     { }
 
     ~Dispatcher() = default;

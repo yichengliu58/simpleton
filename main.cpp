@@ -4,6 +4,7 @@
 #include "Socket.h"
 #include "Reactor.h"
 #include "TcpServer.h"
+#include <future>
 #include <algorithm>
 #include <signal.h>
 
@@ -18,7 +19,7 @@ void onConnected(const shared_ptr<TcpConnection>& ptr)
 void onNewMessage(const shared_ptr<TcpConnection>& conn,Buffer& msg)
 {
     string tmp = msg.GetAllReadable();
-    cout << "接收到: " << tmp.length() << " 字节" << endl;
+    cout << "收到 " << tmp.length() << " 字节" << endl;
     conn->Send(tmp);
 }
 
@@ -31,15 +32,15 @@ int main()
 {
     try
     {
-        ::signal(SIGPIPE,SIG_IGN);
-        EndPoint local("192.168.1.101",12306);
+        /*::signal(SIGPIPE,SIG_IGN);
+        EndPoint local(12306);
         Reactor reactor;
         TcpServer server(&reactor,local);
         server.SetNewConnCallback(onConnected);
         server.SetNewMsgCallback(onNewMessage);
         server.SetPassiveClosingCallback(onPassiveClosing);
 
-        reactor.Start();
+        reactor.Start();*/
     }
     catch(const std::exception& e)
     {

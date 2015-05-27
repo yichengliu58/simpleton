@@ -178,6 +178,5 @@ void Buffer::Push(const string& msg)
         _buffer.insert(_buffer.begin() + _writeIndex, msg.begin(), msg.end());
         //修改可写索引
         _writeIndex += msg.size();
-        cout << "增长至：capacity " << _buffer.capacity() << " size " << _buffer.size() << endl;
     }
 }
