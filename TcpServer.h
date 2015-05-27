@@ -13,6 +13,7 @@
 #include "Reactor.h"
 #include "Acceptor.h"
 #include "TcpConnection.h"
+#include "ThreadPool.h"
 
 namespace simpleton
 {
@@ -22,13 +23,9 @@ using TcpConnectionPtr = shared_ptr<TcpConnection>;
 public:
     //构造函数完成一个服务器程序的初始化过程
     //内部使用Acceptor完成
-    TcpServer(Reactor* reactor,const EndPoint& local);
+    //可以指定多线程的线程数目
+    TcpServer(Reactor* reactor,const EndPoint& local,unsigned int threadNum = 0);
     ~TcpServer();
-
-    unsigned long get()
-    {
-        return _connections.size();
-    }
 
     //设置新连接建立后的回调
     void SetNewConnCallback(const function<void(const TcpConnectionPtr&)>& cb)
@@ -52,7 +49,7 @@ private:
     //负责将参数指定的连接对象从本Server对象中的映射表删除
     void removeConnection(const TcpConnectionPtr&);
 
-    //用于保存关联到的反应器对象
+    //用于保存接受器使用的反应器对象
     Reactor* _reactor;
     //本Server内部的接受器
     unique_ptr<Acceptor> _acceptor;
@@ -62,6 +59,8 @@ private:
     unsigned int _connID;
     //表示本地地址结构
     EndPoint _localAddr;
+    //本Server使用的线程池
+    unique_ptr<ThreadPool> _pool;
 
     //用户提供的新连接建立后的回调函数
     function<void(const TcpConnectionPtr&)> _newConnCallback;

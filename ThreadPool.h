@@ -2,6 +2,7 @@
 // Created by lyc-fedora on 15-4-22.
 //
 //线程池类
+//直接作为Reactor池的封装器
 
 #ifndef SIMPLETON_THREADPOOL_H
 #define SIMPLETON_THREADPOOL_H
@@ -13,6 +14,7 @@
 #include <condition_variable>
 #include <atomic>
 #include <deque>
+#include "Reactor.h"
 
 using namespace std;
 
@@ -59,7 +61,7 @@ public:
     //开启线程池
     //可以设置线程数目
     //否则为默认值
-    ThreadPool(unsigned int maxQueue, unsigned int maxNum = 0);
+    ThreadPool(unsigned int maxNum = 0);
 
     //不可拷贝或移动
     ThreadPool(const ThreadPool&) = delete;
@@ -71,33 +73,29 @@ public:
     //然后唤醒所有等待线程使其结束
     ~ThreadPool();
 
+    //获取线程池推荐线程数目
+    static unsigned int RecommendNumber();
 
-    //提交一个函数对象在线程池中运行
-    //默认情况下会阻塞调用线程
-    void Submit(const TaskType &);
-    /*void Submit(TaskType && );
-
-    //重载函数：如果需要阻塞则返回-1
-    bool TrySubmit(const TaskType &);
-    bool TrySubmit(TaskType && );
-*/
+    //选取一个负载最轻的线程
+    //返回其中的Reactor
+    Reactor* GetAvailReactor();
 private:
     //本进程池运行的工作线程函数
     void workerThread();
 
     //条件变量和互斥锁
-    condition_variable _condFull;
-    condition_variable _condEmpty;
+    condition_variable _cond;
     mutex _mtx;
     //最大线程数目
     //默认为hardware_currency()返回值
     unsigned int _maxNum;
-    //最大队列长度
-    unsigned int _maxQueue;
     //是否在运行标志
     atomic<bool> _isRunning;
-    //存储任务队列
-    deque<TaskType> _taskQueue;
+    //存储Reactor对象指针
+    //实际的Reactor本身是workerThread的栈上对象
+    //可自动析构并设置这里的指针为空
+    //所以可以安全使用
+    vector<Reactor*> _reactors;
     //存储线程对象
     vector<thread> _threads;
     //线程的等待器

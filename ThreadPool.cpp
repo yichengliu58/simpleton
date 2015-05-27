@@ -7,9 +7,8 @@
 
 using namespace simpleton;
 
-ThreadPool::ThreadPool(unsigned int maxQueue, unsigned int maxNum)
+ThreadPool::ThreadPool(unsigned int maxNum)
     :_maxNum(0),
-     _maxQueue(maxQueue),
      _isRunning(false),
      _joiner(_threads)
 {
@@ -37,21 +36,18 @@ ThreadPool::~ThreadPool()
     //先设置为停止运行
     _isRunning = false;
     //通知所有等待在条件变量的线程
-    _condFull.notify_all();
-    _condEmpty.notify_all();
+    _cond.notify_all();
 }
 
-void ThreadPool::Submit(const TaskType& task)
+unsigned int ThreadPool::RecommendNumber()
 {
-    cout << "Submit" << endl;
-    unique_lock<mutex> guard(_mtx);
-    while (_taskQueue.size() >= _maxQueue && _isRunning)
-        _condFull.wait(guard);
-    if (_isRunning && _taskQueue.size() < _maxQueue)
-    {
-        _taskQueue.push_back(task);
-        _condEmpty.notify_one();
-    }
+    return thread::hardware_concurrency();
+}
+
+Reactor* ThreadPool::GetAvailReactor()
+{
+    //先挑一个能用的
+    //然后给他发通知让他开始运行
 }
 
 void ThreadPool::workerThread()
@@ -60,23 +56,12 @@ void ThreadPool::workerThread()
     {
         while(_isRunning)
         {
-            unique_lock<mutex> guard(_mtx);
-            //获取新任务
-            while(_taskQueue.empty() && _isRunning)
-            {
-                _condEmpty.wait(guard);
-            }
-            TaskType task;
-            if(!_taskQueue.empty() && _isRunning)
-            {
-                task = std::move(_taskQueue.front());
-                _taskQueue.pop_front();
-                _condFull.notify_one();
-            }
-            guard.unlock();
-            //运行新任务
-            if(task)
-                task();
+            //在栈上新建一个Reactor对象
+            Reactor reactor;
+            //等待TcpConnection调用
+            //...
+            //接到可运行通知后开始运行
+            reactor.Start();
         }
     }
     catch(...)

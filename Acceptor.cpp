@@ -7,7 +7,10 @@
 using namespace simpleton;
 
 Acceptor::Acceptor(Reactor* reactor, EndPoint end)
-:_reactor(reactor),_socket(),_dispatcher(_socket.GetFd()),_isListening(false)
+    :_reactor(reactor),
+     _socket(),
+     _dispatcher(_socket.GetFd()),
+     _isListening(false)
 {
     try {
         //新建socket

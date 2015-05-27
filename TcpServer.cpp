@@ -8,8 +8,11 @@ using namespace std;
 using namespace std::placeholders;
 using namespace simpleton;
 
-TcpServer::TcpServer(Reactor* reactor, const EndPoint& local)
-:_reactor(reactor),_connID(1),_localAddr(local)
+TcpServer::TcpServer(Reactor* reactor, const EndPoint& local,unsigned int threadNum)
+    :_reactor(reactor),
+     _connID(1),
+     _localAddr(local),
+    _pool()
 {
     try
     {
@@ -19,6 +22,16 @@ TcpServer::TcpServer(Reactor* reactor, const EndPoint& local)
         //注意这里的bind需要两个占位符
         _acceptor->SetNewConnCallback(bind(&TcpServer::handleNewConn,this,_1,_2));
         _acceptor->Listen();
+        //如果指定了线程数目则创建线程池
+        if(threadNum > 0)
+        {
+            unsigned int recommend = ThreadPool::RecommendNumber();
+            unsigned int queue = 1;
+            //如果要求的线程数大于推荐值
+            if(threadNum > recommend)
+                queue = threadNum - recommend + 1;
+            _pool.reset(new ThreadPool(queue,threadNum));
+        }
     }
     catch(...)
     {
@@ -44,7 +57,7 @@ void TcpServer::handleNewConn(Socket&& sock, const EndPoint& peer)
     //给新连接赋予名字：ID + 地址 + Socket描述符
     string name = to_string(_connID) + _localAddr.ToString() + peer.ToString();
     //创建新连接
-    TcpConnectionPtr newConn = make_shared<TcpConnection>(ref(name),_reactor,std::move(sock),ref(_localAddr),ref(peer));
+    TcpConnectionPtr newConn = make_shared<TcpConnection>(ref(name),_pool->GetAvailReactor(),std::move(sock),ref(_localAddr),ref(peer));
     //将本连接置于映射表中
     _connections[name] = newConn;
     //设置新建连接的回调

@@ -32,15 +32,15 @@ int main()
 {
     try
     {
-        /*::signal(SIGPIPE,SIG_IGN);
+        //::signal(SIGPIPE,SIG_IGN);
         EndPoint local(12306);
         Reactor reactor;
-        TcpServer server(&reactor,local);
+        TcpServer server(&reactor,local,10);
         server.SetNewConnCallback(onConnected);
         server.SetNewMsgCallback(onNewMessage);
         server.SetPassiveClosingCallback(onPassiveClosing);
 
-        reactor.Start();*/
+        //reactor.Start();
     }
     catch(const std::exception& e)
     {
