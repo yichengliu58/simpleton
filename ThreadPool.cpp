@@ -46,7 +46,7 @@ unsigned int ThreadPool::RecommendNumber()
 
 Reactor* ThreadPool::GetAvailReactor()
 {
-    //
+    //就是试试新的分支～
 }
 
 void ThreadPool::workerThread()
