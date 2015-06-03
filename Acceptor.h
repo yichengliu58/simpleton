@@ -12,6 +12,7 @@
 #include "Socket.h"
 #include "Dispatcher.h"
 #include "Reactor.h"
+#include "Callbacks.h"
 
 using namespace std;
 
@@ -19,7 +20,6 @@ namespace simpleton
 {
 class Acceptor
 {
-using NewConnCallback = function<void(Socket&&,const EndPoint&)>;
 
 public:
     //构造函数完成服务端的初始化工作
@@ -35,9 +35,9 @@ public:
     void Listen();
 
     //设置新连接到来时的回调
-    void SetNewConnCallback(const NewConnCallback& callback)
+    void SetNewConnCallback(const AcceptorCallback& callback)
     {
-        _newConnCallback = callback;
+        _acceptorCallback = callback;
     }
 
 private:
@@ -51,7 +51,7 @@ private:
     //自己的事件分派器用于负责监听套接字的事件分发
     Dispatcher _dispatcher;
     //新连接到来时的回调
-    NewConnCallback _newConnCallback;
+    AcceptorCallback _acceptorCallback;
     //是否处于监听模式
     bool _isListening;
 };

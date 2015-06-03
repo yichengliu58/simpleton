@@ -65,8 +65,8 @@ void Acceptor::handleRead()
     //必须判断是否有效
     if(connSock.IsValid())
     {
-        if(_newConnCallback)
-            _newConnCallback(std::move(connSock),peer);
+        if(_acceptorCallback)
+            _acceptorCallback(std::move(connSock),peer);
     }
     //如果连接无效Socket本身可以直接被析构无需处理
     //并且不传递给回调函数

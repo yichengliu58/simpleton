@@ -30,7 +30,7 @@ TcpServer::TcpServer(Reactor* reactor, const EndPoint& local,unsigned int thread
             //如果要求的线程数大于推荐值
             if(threadNum > recommend)
                 queue = threadNum - recommend + 1;
-            _pool.reset(new ThreadPool(queue,threadNum));
+            _pool.reset(new ThreadPool(threadNum));
         }
     }
     catch(...)

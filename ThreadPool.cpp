@@ -46,8 +46,7 @@ unsigned int ThreadPool::RecommendNumber()
 
 Reactor* ThreadPool::GetAvailReactor()
 {
-    //先挑一个能用的
-    //然后给他发通知让他开始运行
+    //
 }
 
 void ThreadPool::workerThread()

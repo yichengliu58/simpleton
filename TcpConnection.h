@@ -14,6 +14,7 @@
 #include "Socket.h"
 #include "Reactor.h"
 #include "Buffer.h"
+#include "Callbacks.h"
 
 using namespace std;
 
@@ -22,53 +23,58 @@ namespace simpleton
 //定义四种连接状态
 enum ConnState{Connecting,Connected,Disconnecting,Disconnected};
 
-class TcpConnection : public enable_shared_from_this<TcpConnection> {
+class TcpConnection : public enable_shared_from_this<TcpConnection>
+{
 public:
     TcpConnection(const string &name, Reactor *reactor, Socket &&connSock, const EndPoint &local, const EndPoint &peer);
-
     ~TcpConnection();
 
     TcpConnection(const TcpConnection &) = delete;
-
     TcpConnection &operator=(const TcpConnection &) = delete;
 
     //获得连接标识符字符串
-    string ToString() const {
+    string ToString() const
+    {
         return _name;
     }
 
     //获得本连接本地地址
-    const EndPoint &GetLocalAddr() const {
+    const EndPoint &GetLocalAddr() const
+    {
         return _localAddr;
     }
 
     //获取连接对端地址
-    const EndPoint &GetPeerAddr() const {
+    const EndPoint &GetPeerAddr() const
+    {
         return _peerAddr;
     }
 
     //获取本连接关联的连接套接字
-    const Socket &GetSocket() const {
+    const Socket &GetSocket() const
+    {
         return _socket;
     }
 
     //设置各种用户回调
     //连接建立完成
-    void SetConnEstablishedCallback(const function<void(const shared_ptr<TcpConnection> &)> &cb) {
+    void SetConnEstablishedCallback(const ConnEstablishedCallback& cb)
+    {
         _onConnEstablished = cb;
     }
 
     //新可读消息到来
-    void SetNewMsgCallback(const function<void(const shared_ptr<TcpConnection> &, Buffer &)> &cb) {
+    void SetNewMsgCallback(const NewMsgCallback& cb)
+    {
         _onNewMessage = cb;
     }
     //用于设置从TcpServer移除本连接的回调
-    void SetRemoveThisCallback(const function<void(const shared_ptr<TcpConnection> &)> &cb)
+    void SetRemoveThisCallback(const ConnRemovedCallback& cb)
     {
         _removeConnCallback = cb;
     }
     //用户关闭连接回调
-    void SetPassiveClosingCallback(const function<void(const shared_ptr<TcpConnection> &)> &cb)
+    void SetPassiveClosingCallback(const PassiveClosingCallback& cb)
     {
         _onPassiveClosing = cb;
     }
@@ -117,15 +123,15 @@ private:
 
     //这里的回调由TcpServer提供
     //连接正在被动关闭调用Server的方法将本连接从其中移除
-    function<void(const shared_ptr<TcpConnection>&)> _removeConnCallback;
+    ConnRemovedCallback _removeConnCallback;
 
     //这里的回调是用户提供的
     //新连接创建（接受）完成
-    function<void(const shared_ptr<TcpConnection>&)> _onConnEstablished;
+    ConnEstablishedCallback _onConnEstablished;
     //新可读消息到来
-    function<void(const shared_ptr<TcpConnection>&,Buffer&)> _onNewMessage;
+    NewMsgCallback _onNewMessage;
     //用户注册的连接被动关闭时回调
-    function<void(const shared_ptr<TcpConnection>&)> _onPassiveClosing;
+    PassiveClosingCallback _onPassiveClosing;
 };
 }
 #endif //SIMPLETON_TCPCONNECTION_H
