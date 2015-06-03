@@ -24,7 +24,7 @@ public:
     //构造函数完成一个服务器程序的初始化过程
     //内部使用Acceptor完成
     //可以指定多线程的线程数目
-    TcpServer(Reactor* reactor,const EndPoint& local,unsigned int threadNum = 0);
+    TcpServer(Reactor* reactor,const EndPoint& local);
     ~TcpServer();
 
     //设置新连接建立后的回调
@@ -59,8 +59,6 @@ private:
     unsigned int _connID;
     //表示本地地址结构
     EndPoint _localAddr;
-    //本Server使用的线程池
-    unique_ptr<ThreadPool> _pool;
 
     //用户提供的新连接建立后的回调函数
     function<void(const TcpConnectionPtr&)> _newConnCallback;
