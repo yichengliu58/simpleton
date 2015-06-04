@@ -3,6 +3,7 @@
 //
 
 #include "Reactor.h"
+#include "Exceptions.h"
 
 using namespace simpleton;
 
@@ -17,15 +18,29 @@ Reactor::Reactor()
         throw runtime_error("创建了重复的Reactor对象！");
     else
         _check = this;
-    //尝试构造本对像的Multiplexer对象
+    //尝试构造本对像的Multiplexer对象以及eventfd
     //如果产生异常则需要正确释放之前产生的资源
     try
     {
+        //一定要先构造Multiplexor
         _multiplexer.reset(new Multiplexer);
+        //没有问题再创建eventfd
+        int eventfd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+        if (eventfd < 0)
+            throw exceptions::NewSockError(errno);
+        //新建本eventfd的分派器
+        _eventDispatcher.reset(new Dispatcher(eventfd));
+        //设置关注读事件
+        _eventDispatcher->SetReadCallback(bind(&Reactor::handleWakeup,this));
+        _eventDispatcher->SetReading();
+        //添加分派器到本Reactor
+        _multiplexer->UpdateDispathcer(_eventDispatcher.get());
     }
     catch(...)
     {
         _isReacting = false;
+        _multiplexer.reset(nullptr);
+        _eventDispatcher.reset(nullptr);
         Reactor::_check = nullptr;
         throw;
     }
@@ -36,6 +51,20 @@ Reactor::~Reactor()
 {
     _isReacting = false;
     Reactor::_check = nullptr;
+}
+
+void Reactor::Wakeup()
+{
+    eventfd_t data = 1;
+    ssize_t n = ::write(_eventDispatcher->GetFd(),&data,sizeof(data));
+    //BUG!!!错误处理
+}
+
+void Reactor::handleWakeup()
+{
+    eventfd_t res = 1;
+    ssize_t n = ::read(_eventDispatcher->GetFd(),&res,sizeof(res));
+    //BUG!!!! 错误处理暂时没做（n < sizeof(res)？）
 }
 
 void Reactor::Start()

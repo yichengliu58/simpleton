@@ -13,6 +13,7 @@
 #include <thread>
 #include <atomic>
 #include <vector>
+#include <sys/eventfd.h>
 #include "Dispatcher.h"
 #include "Multiplexer.h"
 
@@ -38,13 +39,20 @@ public:
     void Start();
     //关闭反应器
     void Stop();
+    //用于从epoll_wait唤醒
+    void Wakeup();
 private:
+    //用于eventfd的回调
+    void handleWakeup();
+
     //用于检测当前线程是否存在多个Reactor对象
     thread_local static Reactor* _check;
     //是否在执行事件循环
     atomic<bool> _isReacting;
     //代表当前线程id
     thread::id _threadId;
+    //表示用于唤醒的eventfd的分派器
+    unique_ptr<Dispatcher> _eventDispatcher;
     //表示这次事件循环后得到的可用事件分派器列表
     vector<Dispatcher*> _availDispatchers;
     //考虑到异常处理情况的话需要使用指针而不是对象本身
