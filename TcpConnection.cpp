@@ -1,6 +1,7 @@
 //
 // Created by lyc-fedora on 15-5-1.
 //
+#include <assert.h>
 #include "TcpConnection.h"
 
 using namespace simpleton;
@@ -15,7 +16,7 @@ TcpConnection::TcpConnection(const string& name,Reactor* reactor, Socket&& connS
     //首先设置本连接的分派器的各种回调
     _dispatcher.SetReadCallback(bind(&TcpConnection::handleRead,this));
     _dispatcher.SetCloseCallback(bind(&TcpConnection::handleClose,this));
-    //_dispatcher.SetWriteCallback(bind(&TcpConnection::handleWrite,this));
+    _dispatcher.SetWriteCallback(bind(&TcpConnection::handleWrite,this));
     _dispatcher.SetExceptCallback(bind(&TcpConnection::handleError,this));
 
     //向reactor中注册本分派器
@@ -79,7 +80,10 @@ void TcpConnection::ForceClose()
 {
     if(_currState == Connected)
         _currState = Disconnecting;
-    handleClose();
+    if(_reactor->IsInThread())
+        handleClose();
+    else
+        _reactor->RunInternally(bind(&TcpConnection::handleClose,this));
 }
 
 void TcpConnection::Shutdown()
@@ -151,6 +155,8 @@ void TcpConnection::handleWrite()
 void TcpConnection::handleClose()
 {
     //异常情况未处理！！！！！
+    //assert(_reactor->IsInThread());
+    //这里是否在Reactor线程内部调用？？？？
     if (_currState == Connected || _currState == Disconnecting)
     {
         //清除分派器上所有事件

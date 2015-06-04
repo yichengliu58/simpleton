@@ -35,7 +35,7 @@ int main()
         //::signal(SIGPIPE,SIG_IGN);
         EndPoint local(12306);
         Reactor reactor;
-        TcpServer server(&reactor,local);
+        TcpServer server(&reactor,local,0);
         server.SetNewConnCallback(onConnected);
         server.SetNewMsgCallback(onNewMessage);
         server.SetPassiveClosingCallback(onPassiveClosing);

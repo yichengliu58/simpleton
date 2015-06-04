@@ -24,7 +24,7 @@ public:
     //构造函数完成一个服务器程序的初始化过程
     //内部使用Acceptor完成
     //可以指定多线程的线程数目
-    TcpServer(Reactor* reactor,const EndPoint& local);
+    TcpServer(Reactor* reactor,const EndPoint& local,unsigned int);
     ~TcpServer();
 
     //设置新连接建立后的回调
@@ -49,7 +49,8 @@ private:
     //负责将参数指定的连接对象从本Server对象中的映射表删除
     void removeConnection(const TcpConnectionPtr&);
 
-    //用于保存接受器使用的反应器对象
+    //用于保存接受器使用的反应器对象指针
+    //该对象在外部由用户创建从而控制整个库的运行动力
     Reactor* _reactor;
     //本Server内部的接受器
     unique_ptr<Acceptor> _acceptor;
@@ -59,6 +60,9 @@ private:
     unsigned int _connID;
     //表示本地地址结构
     EndPoint _localAddr;
+    //Reactor线程池
+    //所有IOReactor都在该池中创建并由该池管理生命期
+    ThreadPool _pool;
 
     //用户提供的新连接建立后的回调函数
     function<void(const TcpConnectionPtr&)> _newConnCallback;

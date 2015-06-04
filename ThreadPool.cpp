@@ -12,21 +12,26 @@ ThreadPool::ThreadPool(unsigned int maxNum)
      _isRunning(false),
      _joiner(_threads)
 {
-    unsigned int recommend = thread::hardware_concurrency();
-    _maxNum = maxNum > recommend ? maxNum : recommend;
-
-    _isRunning = true;
-    _threads.reserve(_maxNum);
-
-    try
+    //指定了大于0的线程数目才创建各种对象
+    //否则都是默认构造
+    if(maxNum > 0)
     {
-        for (int i = 0; i < _maxNum; i++)
-            _threads.emplace_back(&ThreadPool::workerThread, this);
-    }
-    catch(...)
-    {
-        _isRunning = false;
-        throw;
+        unsigned int recommend = ThreadPool::RecommendNumber();
+        _maxNum = maxNum > recommend ? maxNum : recommend;
+
+        _isRunning = true;
+        _threads.reserve(_maxNum);
+
+        try
+        {
+            for (int i = 0; i < _maxNum; i++)
+                _threads.emplace_back(&ThreadPool::workerThread, this);
+        }
+        catch (...)
+        {
+            _isRunning = false;
+            throw;
+        }
     }
 }
 
@@ -44,9 +49,14 @@ unsigned int ThreadPool::RecommendNumber()
     return thread::hardware_concurrency();
 }
 
+unsigned int ThreadPool::CurrentNumber() const
+{
+    return _maxNum;
+}
+
 Reactor* ThreadPool::GetAvailReactor()
 {
-    //就是试试新的分支～
+
 }
 
 void ThreadPool::workerThread()
