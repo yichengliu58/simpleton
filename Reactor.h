@@ -14,6 +14,7 @@
 #include <atomic>
 #include <vector>
 #include <sys/eventfd.h>
+#include <mutex>
 #include "Dispatcher.h"
 #include "Multiplexer.h"
 
@@ -23,6 +24,7 @@ namespace simpleton
 {
 class Reactor
 {
+using Task = function<void()>;
 public:
     Reactor();
     ~Reactor();
@@ -41,16 +43,30 @@ public:
     void Stop();
     //用于从epoll_wait唤醒
     void Wakeup();
+    //用于在本Reactor线程内部运行function
+    void RunInternally(const Task&);
+    void RunInQueue(const Task&);
 private:
     //用于eventfd的回调
     void handleWakeup();
-
+    //处理任务列表中待运行的任务
+    void dealRemainedTasks();
     //用于检测当前线程是否存在多个Reactor对象
     thread_local static Reactor* _check;
     //是否在执行事件循环
     atomic<bool> _isReacting;
     //代表当前线程id
     thread::id _threadId;
+    //表示是否有任务正在执行
+    //如果当前Reactor线程正在运行任务列表中某任务
+    //需要重新唤醒来让下一次epoll_wait立刻返回
+    //继续执行待运行任务
+    //否则可能造成饥饿
+    atomic<bool> _isTaskRunning;
+    //保护任务列表
+    mutex _mtx;
+    //表示在这个Reactor上堆积的待运行任务
+    vector<Task> _pendingTasks;
     //表示用于唤醒的eventfd的分派器
     unique_ptr<Dispatcher> _eventDispatcher;
     //表示这次事件循环后得到的可用事件分派器列表

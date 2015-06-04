@@ -10,7 +10,9 @@ using namespace simpleton;
 thread_local Reactor* Reactor::_check = nullptr;
 
 Reactor::Reactor()
-:_isReacting(false),_threadId(this_thread::get_id())
+    :_isReacting(false),
+     _threadId(this_thread::get_id()),
+    _isTaskRunning(false)
 {
     //检测本线程是否存在另一个Reactor
     //如果存在则将本对象销毁退出
@@ -53,6 +55,27 @@ Reactor::~Reactor()
     Reactor::_check = nullptr;
 }
 
+void Reactor::RunInternally(const Task& task)
+{
+    //如果在本Reactor线程内部则同步运行否则入队并唤醒
+    if (this_thread::get_id() == _threadId)
+        task();
+    else
+        RunInQueue(task);
+}
+
+void Reactor::RunInQueue(const Task& task)
+{
+    //加锁保护
+    {
+        unique_lock<mutex> guard(_mtx);
+        _pendingTasks.emplace_back(task);
+    }
+    //唤醒使Reactor在循环最后执行
+    if(this_thread::get_id() != _threadId || _isTaskRunning)
+        Wakeup();
+}
+
 void Reactor::Wakeup()
 {
     eventfd_t data = 1;
@@ -67,6 +90,22 @@ void Reactor::handleWakeup()
     //BUG!!!! 错误处理暂时没做（n < sizeof(res)？）
 }
 
+void Reactor::dealRemainedTasks()
+{
+    //先把待处理任务交换到当前栈上vector中
+    //防止在本函数运行时阻塞别的调用RunInQueue的线程
+    vector<Task> tmp;
+    _isTaskRunning = true;
+    {
+        unique_lock<mutex> guard(_mtx);
+        tmp.swap(_pendingTasks);
+    }
+    //依次执行
+    for(auto& t : tmp)
+        t();
+    _isTaskRunning = false;
+}
+
 void Reactor::Start()
 {
     if(this_thread::get_id() != _threadId)
@@ -74,6 +113,7 @@ void Reactor::Start()
     _isReacting = true;
 
     //开始事件循环
+    //这里就是整个库的运行原动力！
     while(_isReacting)
     {
         //清除可用分派器列表
@@ -85,12 +125,16 @@ void Reactor::Start()
         {
             disp->HandleReturnEvents();
         }
+        //处理待运行的任务
+        dealRemainedTasks();
     }
 }
 
 void Reactor::Stop()
 {
     _isReacting = false;
+    if(this_thread::get_id() != _threadId)
+        Wakeup();
 }
 
 void Reactor::UpdateDispatcher(Dispatcher* disp)
