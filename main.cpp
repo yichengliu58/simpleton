@@ -33,9 +33,9 @@ int main()
     try
     {
         //::signal(SIGPIPE,SIG_IGN);
-        EndPoint local(12306);
+        EndPoint local(12358);
         Reactor reactor;
-        TcpServer server(&reactor,local,0);
+        TcpServer server(&reactor,local,1);
         server.SetNewConnCallback(onConnected);
         server.SetNewMsgCallback(onNewMessage);
         server.SetPassiveClosingCallback(onPassiveClosing);
@@ -44,8 +44,6 @@ int main()
     }
     catch(const std::exception& e)
     {
-        cout << typeid(e).name() << endl;
-
         cout << e.what() << endl;
     }
     return 0;

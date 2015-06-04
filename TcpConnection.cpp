@@ -18,9 +18,8 @@ TcpConnection::TcpConnection(const string& name,Reactor* reactor, Socket&& connS
     _dispatcher.SetCloseCallback(bind(&TcpConnection::handleClose,this));
     _dispatcher.SetWriteCallback(bind(&TcpConnection::handleWrite,this));
     _dispatcher.SetExceptCallback(bind(&TcpConnection::handleError,this));
-
     //向reactor中注册本分派器
-    reactor->UpdateDispatcher(&_dispatcher);
+    reactor->RunInternally(bind(&Reactor::UpdateDispatcher,reactor,&_dispatcher));
 
     //不需要设置地址重用
     //设置本连接socekt的保活选项
@@ -44,6 +43,7 @@ void TcpConnection::ConnectionEstablished()
 
 void TcpConnection::ConnectionRemoved()
 {
+    assert(_reactor->IsInThread());
     _currState = Disconnected;
     _dispatcher.UnsetAllEvents();
     _reactor->DeleteDispatcher(&_dispatcher);
@@ -99,6 +99,7 @@ void TcpConnection::Shutdown()
 
 void TcpConnection::shutdown()
 {
+    assert(_reactor->IsInThread());
     //如果没有关注写事件并且输出缓冲区没有待读出数据则关闭写端
     if (!_dispatcher.IsWritingSet() && _outBuffer.ReadableSize() <= 0)
         _socket.ShutdownWrite();
@@ -154,6 +155,7 @@ void TcpConnection::handleWrite()
 //缓冲区中未发送的应该被丢弃（直接析构）
 void TcpConnection::handleClose()
 {
+    assert(_reactor->IsInThread());
     //异常情况未处理！！！！！
     //assert(_reactor->IsInThread());
     //这里是否在Reactor线程内部调用？？？？

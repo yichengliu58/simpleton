@@ -2,6 +2,8 @@
 // Created by lyc-fedora on 15-4-25.
 //
 
+#include <assert.h>
+#include <iostream>
 #include "Reactor.h"
 #include "Exceptions.h"
 
@@ -139,12 +141,14 @@ void Reactor::Stop()
 
 void Reactor::UpdateDispatcher(Dispatcher* disp)
 {
+    assert(IsInThread());
     if(disp)
         _multiplexer->UpdateDispathcer(disp);
 }
 
 void Reactor::DeleteDispatcher(Dispatcher* disp)
 {
+    assert(IsInThread());
     if(disp)
         _multiplexer->DeleteDispatcher(disp);
 }

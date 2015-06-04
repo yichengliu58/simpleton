@@ -57,7 +57,7 @@ private:
     //当前本Server中保存的所有连接
     map<string,TcpConnectionPtr> _connections;
     //表示连接的可用ID
-    unsigned int _connID;
+    unsigned long _connID;
     //表示本地地址结构
     EndPoint _localAddr;
     //Reactor线程池

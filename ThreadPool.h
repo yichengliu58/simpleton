@@ -83,6 +83,8 @@ public:
 private:
     //本进程池运行的工作线程函数
     void workerThread();
+    //用于初始化各个Reactor
+    void initReactors();
 
     //条件变量和互斥锁
     condition_variable _cond;
@@ -92,6 +94,10 @@ private:
     unsigned int _maxNum;
     //是否在运行标志
     atomic<bool> _isRunning;
+    //临时存储Reactor指针
+    Reactor* _tmp;
+    //当前指定的Reactor
+    unsigned int _index;
     //存储Reactor对象指针
     //实际的Reactor本身是线程函数的栈上对象
     //可自动析构并设置这里的指针为空
