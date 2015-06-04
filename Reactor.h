@@ -36,7 +36,11 @@ public:
     void UpdateDispatcher(Dispatcher*);
     //删除分派器
     void DeleteDispatcher(Dispatcher*);
-
+    //判断当前线程
+    bool IsInThread()
+    {
+        return this_thread::get_id() == _threadId;
+    }
     //开启反应器
     void Start();
     //关闭反应器

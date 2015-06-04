@@ -50,20 +50,28 @@ void TcpConnection::ConnectionRemoved()
         _removeConnCallback(shared_from_this());
 }
 
-void TcpConnection::Send(string const& s) {
-    ////BUG！！！这里线程安全性没有处理！
-
+void TcpConnection::Send(string const& s)
+{
     //如果连接正在关闭则无法发送直接返回
     if (_currState == Connected)
     {
-        _outBuffer.Push(s);
-        int res = _outBuffer.WriteIntoKernel(_socket);
-        //如果还有残留数据则关注可写事件
-        if (res && !_dispatcher.IsWritingSet())
-        {
-            _dispatcher.SetWriting();
-            _reactor->UpdateDispatcher(&_dispatcher);
-        }
+        //判断当前线程
+        if(_reactor->IsInThread())
+            send(s);
+        else
+            _reactor->RunInternally(bind(&TcpConnection::send,this,ref(s)));
+    }
+}
+
+void TcpConnection::send(const string& s)
+{
+    _outBuffer.Push(s);
+    int res = _outBuffer.WriteIntoKernel(_socket);
+    //如果还有残留数据则关注可写事件
+    if (res && !_dispatcher.IsWritingSet())
+    {
+        _dispatcher.SetWriting();
+        _reactor->UpdateDispatcher(&_dispatcher);
     }
 }
 
@@ -76,18 +84,22 @@ void TcpConnection::ForceClose()
 
 void TcpConnection::Shutdown()
 {
-    ////BUG！！！线程安全性没有处理！
     if(_currState == Connected)
     {
         //设置状态为正在关闭
         _currState = Disconnecting;
-        //如果没有关注写事件并且输出缓冲区没有待读出数据则关闭写端
-        if (!_dispatcher.IsWritingSet() && _outBuffer.ReadableSize() <= 0)
-            _socket.ShutdownWrite();
+        //线程内同步执行
+        _reactor->RunInternally(bind(&TcpConnection::shutdown,this));
     }
-    //如果已经开始关闭（必定是被动关闭）则不用处理等待移除连接就行
 }
 
+void TcpConnection::shutdown()
+{
+    //如果没有关注写事件并且输出缓冲区没有待读出数据则关闭写端
+    if (!_dispatcher.IsWritingSet() && _outBuffer.ReadableSize() <= 0)
+        _socket.ShutdownWrite();
+    //如果已经开始关闭（必定是被动关闭）则不用处理等待移除连接就行
+}
 
 void TcpConnection::handleRead()
 {

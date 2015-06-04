@@ -58,7 +58,7 @@ Reactor::~Reactor()
 void Reactor::RunInternally(const Task& task)
 {
     //如果在本Reactor线程内部则同步运行否则入队并唤醒
-    if (this_thread::get_id() == _threadId)
+    if (IsInThread())
         task();
     else
         RunInQueue(task);
@@ -72,7 +72,7 @@ void Reactor::RunInQueue(const Task& task)
         _pendingTasks.emplace_back(task);
     }
     //唤醒使Reactor在循环最后执行
-    if(this_thread::get_id() != _threadId || _isTaskRunning)
+    if(!IsInThread() || _isTaskRunning)
         Wakeup();
 }
 
@@ -108,7 +108,7 @@ void Reactor::dealRemainedTasks()
 
 void Reactor::Start()
 {
-    if(this_thread::get_id() != _threadId)
+    if(!IsInThread())
         throw runtime_error("无法跨线程开启Reactor！");
     _isReacting = true;
 
@@ -133,7 +133,7 @@ void Reactor::Start()
 void Reactor::Stop()
 {
     _isReacting = false;
-    if(this_thread::get_id() != _threadId)
+    if(!IsInThread())
         Wakeup();
 }
 

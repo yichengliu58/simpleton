@@ -95,6 +95,11 @@ public:
     //正在主动关闭时不等待对端关闭直接结束
     void ForceClose();
 private:
+    //内部发送接口负责具体发送工作
+    void send(const string&);
+    //内部关闭连接接口负责具体关闭工作
+    void shutdown();
+
     //这些回调供dispatcher调用
     //最初的获得的事件会先调用这里的回调
     void handleRead();
@@ -107,7 +112,7 @@ private:
     //相关的反应器引用
     Reactor* _reactor;
     //当前连接状态
-    ConnState _currState;
+    atomic<ConnState> _currState;
     //本TCP连接的连接套接字
     Socket _socket;
     //保存本地连接地址
