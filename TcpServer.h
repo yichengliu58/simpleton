@@ -10,13 +10,25 @@
 #define SIMPLETON_TCPSERVER_H
 
 
+#include <signal.h>
 #include "Reactor.h"
 #include "Acceptor.h"
 #include "TcpConnection.h"
 #include "ThreadPool.h"
+#include "Callbacks.h"
 
 namespace simpleton
 {
+//辅助类用于忽略指定信号
+class IgnoreSignal
+{
+public:
+    static void IgnorePipe()
+    {
+        ::signal(SIGPIPE,SIG_IGN);
+    }
+};
+
 class TcpServer
 {
 using TcpConnectionPtr = shared_ptr<TcpConnection>;
@@ -28,17 +40,17 @@ public:
     ~TcpServer();
 
     //设置新连接建立后的回调
-    void SetNewConnCallback(const function<void(const TcpConnectionPtr&)>& cb)
+    void SetNewConnCallback(const ConnEstablishedCallback& cb)
     {
         _newConnCallback = cb;
     }
     //设置新可读消息到来后的回调
-    void SetNewMsgCallback(const function<void(const TcpConnectionPtr&,Buffer&)>& cb)
+    void SetNewMsgCallback(const NewMsgCallback& cb)
     {
         _newMessageCallback = cb;
     }
     //设置被动关闭时调用的回调函数
-    void SetPassiveClosingCallback(const function<void(const TcpConnectionPtr&)>& cb)
+    void SetPassiveClosingCallback(const PassiveClosingCallback& cb)
     {
         _passiveClosingCallback = cb;
     }
@@ -57,7 +69,7 @@ private:
     //当前本Server中保存的所有连接
     map<string,TcpConnectionPtr> _connections;
     //表示连接的可用ID
-    unsigned long _connID;
+    long _connID;
     //表示本地地址结构
     EndPoint _localAddr;
     //Reactor线程池
@@ -65,11 +77,11 @@ private:
     ThreadPool _pool;
 
     //用户提供的新连接建立后的回调函数
-    function<void(const TcpConnectionPtr&)> _newConnCallback;
+    ConnEstablishedCallback _newConnCallback;
     //用户提供的新消息到达后的回调函数
-    function<void(const TcpConnectionPtr&,Buffer& )> _newMessageCallback;
+    NewMsgCallback _newMessageCallback;
     //用户提供的被动关闭连接后的回调函数
-    function<void(const TcpConnectionPtr&)> _passiveClosingCallback;
+    PassiveClosingCallback _passiveClosingCallback;
 };
 }
 

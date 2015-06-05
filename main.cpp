@@ -2,18 +2,16 @@
 #include <sstream>
 #include "ThreadPool.h"
 #include "Socket.h"
-#include "Reactor.h"
 #include "TcpServer.h"
 #include <future>
 #include <algorithm>
-#include <signal.h>
 
 using namespace std;
 using namespace simpleton;
 
 void onConnected(const shared_ptr<TcpConnection>& ptr)
 {
-    cout << ptr->GetPeerAddr().ToString() << " has connected" << endl;
+    //cout << ptr->GetPeerAddr().ToString() << " has connected" << endl;
 }
 
 void onNewMessage(const shared_ptr<TcpConnection>& conn,Buffer& msg)
