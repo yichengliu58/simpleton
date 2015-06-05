@@ -61,6 +61,8 @@ private:
     //负责将参数指定的连接对象从本Server对象中的映射表删除
     void removeConnection(const TcpConnectionPtr&);
 
+    //用于保护_connections
+    mutex _mtx;
     //用于保存接受器使用的反应器对象指针
     //该对象在外部由用户创建从而控制整个库的运行动力
     Reactor* _reactor;

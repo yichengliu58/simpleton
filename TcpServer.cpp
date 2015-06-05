@@ -2,6 +2,7 @@
 // Created by lyc-fedora on 15-5-1.
 //
 
+#include <assert.h>
 #include "TcpServer.h"
 
 using namespace std;
@@ -40,6 +41,7 @@ TcpServer::~TcpServer()
 void TcpServer::removeConnection(const TcpConnectionPtr& conn)
 {
     //删除连接对象
+    lock_guard<mutex> guard(_mtx);
     _connections.erase(conn->ToString());
 }
 
@@ -56,11 +58,13 @@ void TcpServer::handleNewConn(Socket&& sock, const EndPoint& peer)
     else
         io = _pool.GetAvailReactor();
     //创建新连接
-    //TcpConnectionPtr newConn = make_shared<TcpConnection>(ref(name),io,std::move(sock),ref(_localAddr),ref(peer));
     TcpConnectionPtr newConn = make_shared<TcpConnection>(ref(name),io,std::move(sock),ref(_localAddr),ref(peer));
     //将本连接置于映射表中
-    //需要考虑线程安全
-    _connections[name] = newConn;
+    //暂时使用锁保护放置竞争条件（段错误）
+    {
+        lock_guard<mutex> guard(_mtx);
+        _connections[name] = newConn;
+    }
     //设置新建连接的回调
     newConn->SetConnEstablishedCallback(_newConnCallback);
     newConn->SetNewMsgCallback(_newMessageCallback);
