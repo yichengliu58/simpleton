@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <linux/tcp.h>
 #include "Socket.h"
+#include <iostream>
 
 using namespace simpleton;
 

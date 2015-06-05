@@ -34,7 +34,8 @@ public:
     Dispatcher& operator=(const Dispatcher&) = delete;
 
     //获取描述符值
-    int GetFd() const {
+    int GetFd() const
+    {
         return _fd;
     }
     //设置描述符值

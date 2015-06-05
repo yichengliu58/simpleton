@@ -63,7 +63,7 @@ namespace simpleton
         {
         public:
             explicit NewSockError(int num)
-            :std::runtime_error("Socket描述符创建失败！错误信息：" + exceptions::GetErrnoInfo(num))
+            :std::runtime_error("描述符创建失败！错误信息：" + exceptions::GetErrnoInfo(num))
             { }
         };
 

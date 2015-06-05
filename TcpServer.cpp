@@ -8,10 +8,11 @@ using namespace std;
 using namespace std::placeholders;
 using namespace simpleton;
 
-TcpServer::TcpServer(Reactor* reactor, const EndPoint& local)
+TcpServer::TcpServer(Reactor* reactor, const EndPoint& local,unsigned int threadNum)
     :_reactor(reactor),
      _connID(1),
-     _localAddr(local)
+     _localAddr(local),
+     _pool(threadNum)
 {
     try
     {
@@ -21,11 +22,13 @@ TcpServer::TcpServer(Reactor* reactor, const EndPoint& local)
         //注意这里的bind需要两个占位符
         _acceptor->SetNewConnCallback(bind(&TcpServer::handleNewConn,this,_1,_2));
         _acceptor->Listen();
+        IgnoreSignal::IgnorePipe();
     }
-    catch(...)
+    catch(const exception& e)
     {
         _reactor = nullptr;
-        throw;
+        cout << e.what() << endl;
+        abort();
     }
 }
 
@@ -44,9 +47,17 @@ void TcpServer::handleNewConn(Socket&& sock, const EndPoint& peer)
 {
     //在这里新建TcpConnection对象并设置相关属性
     //给新连接赋予名字：ID + 地址 + Socket描述符
-    string name = to_string(_connID) + _localAddr.ToString() + peer.ToString();
+    string name = to_string(_connID++) + _localAddr.ToString() + peer.ToString();
+    //新建一个Reactor指针
+    Reactor* io = nullptr;
+    //如果线程池数目为零则返回自己的Reactor
+    if(_pool.CurrentNumber() == 0)
+        io = _reactor;
+    else
+        io = _pool.GetAvailReactor();
     //创建新连接
-    TcpConnectionPtr newConn = make_shared<TcpConnection>(ref(name),_reactor,std::move(sock),ref(_localAddr),ref(peer));
+    //TcpConnectionPtr newConn = make_shared<TcpConnection>(ref(name),io,std::move(sock),ref(_localAddr),ref(peer));
+    TcpConnectionPtr newConn = make_shared<TcpConnection>(ref(name),io,std::move(sock),ref(_localAddr),ref(peer));
     //将本连接置于映射表中
     _connections[name] = newConn;
     //设置新建连接的回调
@@ -56,5 +67,7 @@ void TcpServer::handleNewConn(Socket&& sock, const EndPoint& peer)
     //设置连接被动关闭时调用的本Server的方法来移除该连接
     newConn->SetRemoveThisCallback(bind(&TcpServer::removeConnection,this,_1));
     //调用新建连接后的用户回调
-    newConn->ConnectionEstablished();
+    //此时Reactor已经可用
+    //需要在Reactor线程运行
+    io->RunInternally(bind(&TcpConnection::ConnectionEstablished,newConn));
 }

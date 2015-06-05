@@ -12,7 +12,8 @@ Acceptor::Acceptor(Reactor* reactor, EndPoint end)
      _dispatcher(_socket.GetFd()),
      _isListening(false)
 {
-    try {
+    try
+    {
         //新建socket
         _socket.NewSocket();
         //没有异常再重新设置描述符值

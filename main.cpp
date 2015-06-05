@@ -2,18 +2,16 @@
 #include <sstream>
 #include "ThreadPool.h"
 #include "Socket.h"
-#include "Reactor.h"
 #include "TcpServer.h"
 #include <future>
 #include <algorithm>
-#include <signal.h>
 
 using namespace std;
 using namespace simpleton;
 
 void onConnected(const shared_ptr<TcpConnection>& ptr)
 {
-    cout << ptr->GetPeerAddr().ToString() << " has connected" << endl;
+    //cout << ptr->GetPeerAddr().ToString() << " has connected" << endl;
 }
 
 void onNewMessage(const shared_ptr<TcpConnection>& conn,Buffer& msg)
@@ -33,9 +31,9 @@ int main()
     try
     {
         //::signal(SIGPIPE,SIG_IGN);
-        EndPoint local(12306);
+        EndPoint local(12358);
         Reactor reactor;
-        TcpServer server(&reactor,local);
+        TcpServer server(&reactor,local,1);
         server.SetNewConnCallback(onConnected);
         server.SetNewMsgCallback(onNewMessage);
         server.SetPassiveClosingCallback(onPassiveClosing);
@@ -44,8 +42,6 @@ int main()
     }
     catch(const std::exception& e)
     {
-        cout << typeid(e).name() << endl;
-
         cout << e.what() << endl;
     }
     return 0;

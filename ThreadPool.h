@@ -75,13 +75,16 @@ public:
 
     //获取线程池推荐线程数目
     static unsigned int RecommendNumber();
-
+    //获取线程池内当前线程数量
+    unsigned int CurrentNumber() const;
     //选取一个负载最轻的线程
     //返回其中的Reactor
     Reactor* GetAvailReactor();
 private:
     //本进程池运行的工作线程函数
     void workerThread();
+    //用于初始化各个Reactor
+    void initReactors();
 
     //条件变量和互斥锁
     condition_variable _cond;
@@ -91,8 +94,12 @@ private:
     unsigned int _maxNum;
     //是否在运行标志
     atomic<bool> _isRunning;
+    //临时存储Reactor指针
+    Reactor* _tmp;
+    //当前指定的Reactor
+    unsigned int _index;
     //存储Reactor对象指针
-    //实际的Reactor本身是workerThread的栈上对象
+    //实际的Reactor本身是线程函数的栈上对象
     //可自动析构并设置这里的指针为空
     //所以可以安全使用
     vector<Reactor*> _reactors;

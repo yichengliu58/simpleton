@@ -4,7 +4,7 @@
 
 #include "Multiplexer.h"
 #include "Exceptions.h"
-#include <iostream>
+
 using namespace simpleton;
 
 Multiplexer::Multiplexer()
@@ -73,7 +73,6 @@ void Multiplexer::DeleteDispatcher(Dispatcher* dispatcher)
 void Multiplexer::Wait(int timeout,vector<Dispatcher*>& result)
 {
     int eventnum = ::epoll_wait(_epollfd,_eventList.data(), static_cast<int>(_eventList.size()),timeout);
-
     //处理得到的各种发生的事件
     if(eventnum > 0)
     {
