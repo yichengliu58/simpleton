@@ -16,12 +16,6 @@ void Dispatcher::HandleReturnEvents()
         if(_closeCallback)
             _closeCallback();
     }
-    //错误情况
-    if(_revents & (EPOLLERR))
-    {
-        if(_exceptCallback)
-            _exceptCallback();
-    }
     //数据可读情况
     //包括对端关闭连接（EPOLLRDHUP）
     //和普通数据加优先级数据可读
@@ -36,5 +30,11 @@ void Dispatcher::HandleReturnEvents()
     {
         if(_writeCallback)
             _writeCallback();
+    }
+    //错误情况
+    if(_revents & (EPOLLERR))
+    {
+        if(_exceptCallback)
+            _exceptCallback();
     }
 }

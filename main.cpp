@@ -30,7 +30,6 @@ int main()
 {
     try
     {
-        //::signal(SIGPIPE,SIG_IGN);
         EndPoint local(12358);
         Reactor reactor;
         TcpServer server(&reactor,local,1);

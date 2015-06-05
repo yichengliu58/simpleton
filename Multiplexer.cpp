@@ -35,7 +35,7 @@ void Multiplexer::UpdateDispathcer(Dispatcher* dispatcher)
         if(::epoll_ctl(_epollfd, EPOLL_CTL_ADD, sockfd, &event) < 0)
         {
             int saveError = errno;
-            throw exceptions::ApiExecError("epoll_ctl",saveError);
+            throw exceptions::ApiExecError("epoll_ctl::ADD",saveError);
         }
     }
     else
@@ -43,7 +43,7 @@ void Multiplexer::UpdateDispathcer(Dispatcher* dispatcher)
         if(::epoll_ctl(_epollfd, EPOLL_CTL_MOD, sockfd, &event) < 0)
         {
             int saveError = errno;
-            throw exceptions::ApiExecError("epoll_ctl",saveError);
+            throw exceptions::ApiExecError("epoll_ctl::MOD",saveError);
         }
     }
     //利用map特性直接使用下标运算符
@@ -64,7 +64,7 @@ void Multiplexer::DeleteDispatcher(Dispatcher* dispatcher)
         if(::epoll_ctl(_epollfd,EPOLL_CTL_DEL,sockfd,&event) < 0)
         {
             int saveError = errno;
-            throw exceptions::ApiExecError("epoll_ctl",saveError);
+            throw exceptions::ApiExecError("epoll_ctl::DEL",saveError);
         }
     }
 }

@@ -59,6 +59,7 @@ void TcpServer::handleNewConn(Socket&& sock, const EndPoint& peer)
     //TcpConnectionPtr newConn = make_shared<TcpConnection>(ref(name),io,std::move(sock),ref(_localAddr),ref(peer));
     TcpConnectionPtr newConn = make_shared<TcpConnection>(ref(name),io,std::move(sock),ref(_localAddr),ref(peer));
     //将本连接置于映射表中
+    //需要考虑线程安全
     _connections[name] = newConn;
     //设置新建连接的回调
     newConn->SetConnEstablishedCallback(_newConnCallback);

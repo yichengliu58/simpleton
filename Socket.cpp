@@ -35,7 +35,7 @@ void Socket::SetKeepAlive(bool on)
 void Socket::SetNagle(bool on)
 {
     int val = on ? 1 : 0;
-    if(!::setsockopt(_sockfd,IPPROTO_TCP,TCP_NODELAY,&val,
+    if(::setsockopt(_sockfd,IPPROTO_TCP,TCP_NODELAY,&val,
                      static_cast<socklen_t>(sizeof(val))) < 0) {
         int saveErr = errno;
         throw exceptions::SetOptError("TCP_NODELAY", saveErr);
@@ -45,7 +45,7 @@ void Socket::SetNagle(bool on)
 void Socket::SetReuseAddr(bool on)
 {
     int val = on ? 1 : 0;
-    if(!::setsockopt(_sockfd,SO_KEEPALIVE,SO_REUSEADDR,&val,
+    if(::setsockopt(_sockfd,SOL_SOCKET,SO_REUSEADDR,&val,
                      static_cast<socklen_t>(sizeof(val))) < 0)
     {
         int saveErr = errno;
